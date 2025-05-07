@@ -3,17 +3,13 @@ import { importConfig } from "payload/node"
 import { parse } from '@wordpress/block-serialization-default-parser'
 import fs from 'fs'
 import { XMLParser } from "fast-xml-parser"
-import mime from 'mime'
 import cheerio from 'cheerio'
 import path from 'path'
-
-import { defaultEditorConfig, defaultEditorFeatures } from '@payloadcms/richtext-lexical' // <= make sure this package is installed
-
-
 import { createHeadlessEditor } from '@lexical/headless' // <= make sure this package is installed
 import {
     getEnabledNodes,
     sanitizeServerEditorConfig,
+    defaultEditorConfig
 } from '@payloadcms/richtext-lexical'
 
 import { $generateNodesFromDOM } from '@lexical/html'
@@ -22,8 +18,11 @@ import { JSDOM } from 'jsdom';
 
 
 const categoryMap = {
-    "Knowledge Base": "66959006ded7f2eb40aa3e30",
-    "News": "66959001ded7f2eb40aa3e15",
+    "Recent News": "681b4559bf22b4f03457eddf",
+    "News": "681b4517bf22b4f03457eda6",
+    "Popular News": "681b4545bf22b4f03457edcc",
+    "Opinion": "681b452dbf22b4f03457edb9",
+    "Features": "681b44febf22b4f03457ed93",
 };
 
 
