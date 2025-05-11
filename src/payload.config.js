@@ -41,7 +41,7 @@ export default buildConfig({
       options: {
         token: process.env.UPLOADTHING_TOKEN,
         acl: 'public-read',
-        clientUploads: true
+        // clientUploads: true
         // logLevel: 'info', // Optional: 'error', 'warn', 'info', 'debug', 'trace'
       },
     }),
