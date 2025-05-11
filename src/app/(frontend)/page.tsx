@@ -1,59 +1,54 @@
-import { headers as getHeaders } from 'next/headers.js'
-import Image from 'next/image'
 import { getPayload } from 'payload'
 import React from 'react'
-import { fileURLToPath } from 'url'
-
 import config from '@/payload.config'
-import './styles.css'
+import { HeroSection } from '@/components/home/HeroSection'
+import { FeaturedPosts } from '@/components/home/FeaturedPosts'
+import { CategorySection } from '@/components/home/CategorySection'
+import { BlogPost } from '@/payload-types' 
 
 export default async function HomePage() {
-  const headers = await getHeaders()
   const payloadConfig = await config
   const payload = await getPayload({ config: payloadConfig })
-  const { user } = await payload.auth({ headers })
 
-  const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
+  // Fetch the latest blog posts for the hero section
+  const heroPostsResponse = await payload.find({
+    collection: 'blogPosts',
+    limit: 5,
+    sort: '-createdAt',
+    depth: 1, // Load author and image relationships
+  })
+
+  const heroPosts = heroPostsResponse.docs
+  const latestPost: BlogPost | null = heroPosts.length > 0 ? heroPosts[0] : null
+
+  // Get IDs of posts shown in HeroSection to exclude from FeaturedPosts
+  const heroPostIds = heroPosts.map((post) => post.id)
+
+  // Fetch categories
+  const categoriesResponse = await payload.find({
+    collection: 'blogCategories',
+    limit: 6,
+  })
+
+  const categories = categoriesResponse.docs
 
   return (
-    <div className="home">
-      <div className="content">
-        <picture>
-          <source srcSet="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-favicon.svg" />
-          <Image
-            alt="Payload Logo"
-            height={65}
-            src="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-favicon.svg"
-            width={65}
-          />
-        </picture>
-        {!user && <h1>Welcome to your new project.</h1>}
-        {user && <h1>Welcome back, {user.email}</h1>}
-        <div className="links">
-          <a
-            className="admin"
-            href={payloadConfig.routes.admin}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Go to admin panel
-          </a>
-          <a
-            className="docs"
-            href="https://payloadcms.com/docs"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Documentation
-          </a>
+    <div className="min-h-screen">
+      {/* Hero Section with latest post and recent posts */}
+      <HeroSection latestPost={latestPost} recentPosts={heroPosts.slice(1)} />
+
+      {/* Featured Posts Section - Excluding hero posts */}
+      <FeaturedPosts excludePostIds={heroPostIds} />
+
+      {/* Categories Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-serif font-bold text-gray-900 mb-10 text-center">
+            News Categories
+          </h2>
+          <CategorySection categories={categories} />
         </div>
-      </div>
-      <div className="footer">
-        <p>Update this page by editing</p>
-        <a className="codeLink" href={fileURL}>
-          <code>app/(frontend)/page.tsx</code>
-        </a>
-      </div>
+      </section>
     </div>
   )
 }
