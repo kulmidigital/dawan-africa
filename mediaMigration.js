@@ -9,7 +9,7 @@ import config from './src/payload.config.js'
 
 // ---------- Fixed parameters -----------------------------------------------
 
-const SKIP_FIRST = 1765              // Number of media items to skip
+const SKIP_FIRST = 2635              // Number of media items to skip
 const MAX_FILE_SIZE_MB = 50         // Hard size ceiling for a single file
 const WXR_PATH = './media.xml'      // Location of WordPress export
 
