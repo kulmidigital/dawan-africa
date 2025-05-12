@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
         const categoriesData = await categoriesResponse.json()
 
         // Fetch recent posts
-        const postsResponse = await fetch('/api/blogPosts?limit=3&sort=-createdAt&depth=1')
+        const postsResponse = await fetch('/api/blogPosts?limit=3&sort=-createdAt&depth=2')
         const postsData = await postsResponse.json()
 
         if (categoriesData.docs) {

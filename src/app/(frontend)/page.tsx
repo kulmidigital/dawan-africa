@@ -4,7 +4,7 @@ import config from '@/payload.config'
 import { HeroSection } from '@/components/home/HeroSection'
 import { FeaturedPosts } from '@/components/home/FeaturedPosts'
 import { CategorySection } from '@/components/home/CategorySection'
-import { BlogPost } from '@/payload-types' 
+import { BlogPost } from '@/payload-types'
 
 export default async function HomePage() {
   const payloadConfig = await config
@@ -15,7 +15,7 @@ export default async function HomePage() {
     collection: 'blogPosts',
     limit: 5,
     sort: '-createdAt',
-    depth: 1, // Load author and image relationships
+    depth: 2,
   })
 
   const heroPosts = heroPostsResponse.docs

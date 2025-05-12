@@ -58,7 +58,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categories }) 
       try {
         // Only fetch exactly what we need (posts equal to categories count)
         const response = await fetch(
-          `/api/blogPosts?limit=${categories.length}&sort=-createdAt&depth=1`,
+          `/api/blogPosts?limit=${categories.length}&sort=-createdAt&depth=2`,
         )
 
         if (!response.ok) {

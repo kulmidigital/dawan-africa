@@ -1,7 +1,7 @@
 import { Block } from "payload";
 
 export const RichText: Block = {
-    slug: "richText",
+    slug: "richtext",
     fields: [
         {
             name: "content",

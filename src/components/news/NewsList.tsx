@@ -33,7 +33,7 @@ export const NewsList: React.FC = () => {
           limit: String(POSTS_PER_PAGE),
           page: String(currentPage),
           sort: sortBy,
-          depth: '1',
+          depth: '2',
         })
 
         if (searchTerm) {

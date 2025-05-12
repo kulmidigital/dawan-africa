@@ -34,7 +34,7 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [
         // Build query for posts in the last 30 days, excluding specific IDs
         const queryParams = new URLSearchParams({
           limit: '50',
-          depth: '1',
+          depth: '2',
           sort: '-createdAt',
           where: JSON.stringify({
             and: [
@@ -121,7 +121,7 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [
 
     // Look for richText blocks
     for (const block of post.layout) {
-      if (block.blockType === 'richText' && block.content?.root?.children?.[0]?.text) {
+      if (block.blockType === 'richtext' && block.content?.root?.children?.[0]?.text) {
         const text = block.content.root.children[0].text as string
         return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
       }

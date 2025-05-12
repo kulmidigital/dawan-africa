@@ -182,7 +182,7 @@ export interface BlogPost {
             } | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'richText';
+            blockType: 'richtext';
           }
         | {
             heading: {
@@ -343,7 +343,7 @@ export interface BlogPostsSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        richText?:
+        richtext?:
           | T
           | {
               content?: T;

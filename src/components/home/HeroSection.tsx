@@ -8,7 +8,7 @@ import { ArrowRight, Newspaper, Zap, Clock } from 'lucide-react'
 // Import shadcn components
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
+
 
 interface HeroSectionProps {
   latestPost: BlogPost | null
@@ -94,7 +94,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       if (block.blockType === 'cover' && block.image) {
         // Handle both string ID and Media object
         const media = typeof block.image === 'string' ? null : (block.image as Media)
-        return media?.url || null
+        return media?.url ?? null
       }
     }
 
@@ -102,7 +102,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     for (const block of post.layout) {
       if (block.blockType === 'image' && block.image) {
         const media = typeof block.image === 'string' ? null : (block.image as Media)
-        return media?.url || null
+        return media?.url ?? null
       }
     }
 
@@ -137,7 +137,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
     // Fall back to richText blocks
     for (const block of post.layout) {
-      if (block.blockType === 'richText' && block.content?.root?.children?.[0]?.text) {
+      if (block.blockType === 'richtext' && block.content?.root?.children?.[0]?.text) {
         const text = block.content.root.children[0].text as string
         return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
       }
