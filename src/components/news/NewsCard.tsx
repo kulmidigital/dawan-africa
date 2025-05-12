@@ -35,7 +35,7 @@ const getPostImage = (post: BlogPost): string | null => {
 const getPostExcerpt = (post: BlogPost, maxLength = 120): string => {
   if (!post.layout) return ''
   for (const block of post.layout) {
-    if (block.blockType === 'richText' && block.content?.root?.children?.[0]?.text) {
+    if (block.blockType === 'richtext' && block.content?.root?.children?.[0]?.text) {
       const text = block.content.root.children[0].text as string
       return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
     }
