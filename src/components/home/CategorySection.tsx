@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { BlogCategory, BlogPost, Media } from '@/payload-types'
+import { BlogCategory, BlogPost} from '@/payload-types'
 import {
   Building2,
   CircleDollarSign,
@@ -13,6 +13,10 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import Image from 'next/image'
+
+// Import utility functions
+import { getPostImageFromLayout } from '@/utils/postUtils'
 
 interface CategorySectionProps {
   categories: BlogCategory[]
@@ -79,30 +83,6 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categories }) 
     }
   }, [categories.length])
 
-  // Function to extract image from the post layout blocks
-  const getPostImage = (post: BlogPost | null): string | null => {
-    if (!post || !post.layout) return null
-
-    // Look first for cover blocks with images
-    for (const block of post.layout) {
-      if (block.blockType === 'cover' && block.image) {
-        // Handle both string ID and Media object
-        const media = typeof block.image === 'string' ? null : (block.image as Media)
-        return media?.url || null
-      }
-    }
-
-    // Fall back to image blocks if no cover blocks have images
-    for (const block of post.layout) {
-      if (block.blockType === 'image' && block.image) {
-        const media = typeof block.image === 'string' ? null : (block.image as Media)
-        return media?.url || null
-      }
-    }
-
-    return null
-  }
-
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -118,7 +98,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categories }) 
       {categories.map((category, index) => {
         const style = categoryStyles[index % categoryStyles.length]
         const post = posts[index] || null
-        const imageUrl = getPostImage(post)
+        const imageUrl = post ? getPostImageFromLayout(post.layout) : null
 
         return (
           <Link
@@ -129,9 +109,10 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categories }) 
             {/* Image section */}
             <div className="relative h-48 overflow-hidden">
               {imageUrl ? (
-                <img
+                <Image
                   src={imageUrl}
                   alt={category.name}
+                  fill
                   className="h-full w-full object-cover transform transition-transform duration-700 group-hover:scale-105"
                 />
               ) : (
@@ -156,6 +137,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categories }) 
                     {post.name}
                   </h4>
                   <span className="text-xs text-gray-500">
+                    {/* Consider using formatTimeAgo for consistency if desired */}
                     {new Date(post.createdAt).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
