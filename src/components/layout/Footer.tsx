@@ -91,8 +91,7 @@ const Footer: React.FC = () => {
                 className="mb-3 sm:mb-4 w-auto h-[36px] sm:h-[42px]"
               />
               <p className="text-slate-300 text-sm max-w-xs">
-                Your trusted source for African news, analysis, and insights from across the
-                continent.
+                Uncovering the Continent — Through Its Own Lens
               </p>
             </div>
 

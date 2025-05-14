@@ -4,8 +4,8 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 
 export const metadata = {
-  description: 'Latest news and updates from across Africa',
-  title: 'Dawan Africa | Your trusted source for African news',
+  description: 'Uncovering the Continent — Through Its Own Lens',
+  title: 'Uncovering the Continent — Through Its Own Lens',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
