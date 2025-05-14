@@ -66,15 +66,15 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ post }) => {
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
                   <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm hover:shadow transition-all border border-gray-200">
-                    <ThumbsUp className="h-4 w-4 text-blue-600" />
+                    <ThumbsUp className="h-4 w-4 text-[#2aaac6]" />
                     <span className="text-sm font-medium">Like</span>
                   </button>
                   <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm hover:shadow transition-all border border-gray-200">
-                    <MessageCircle className="h-4 w-4 text-blue-600" />
+                    <MessageCircle className="h-4 w-4 text-[#2aaac6]" />
                     <span className="text-sm font-medium">Comment</span>
                   </button>
                   <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm hover:shadow transition-all border border-gray-200">
-                    <Bookmark className="h-4 w-4 text-blue-600" />
+                    <Bookmark className="h-4 w-4 text-[#2aaac6]" />
                     <span className="text-sm font-medium">Save</span>
                   </button>
                 </div>
@@ -84,13 +84,13 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ post }) => {
               <div className="flex justify-between">
                 <Link
                   href="/news"
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 transition-colors text-white font-medium rounded-lg"
+                  className="px-6 py-3 bg-[#2aaac6] hover:bg-[#2aaac6] transition-colors text-white font-medium rounded-lg"
                 >
                   More Articles
                 </Link>
                 <button
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  className="px-6 py-3 bg-white hover:bg-gray-50 transition-colors text-blue-600 font-medium border border-blue-200 rounded-lg"
+                  className="px-6 py-3 bg-white hover:bg-gray-50 transition-colors text-[#2aaac6] font-medium border border-blue-200 rounded-lg"
                 >
                   Back to Top
                 </button>

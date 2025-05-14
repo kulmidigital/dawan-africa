@@ -3,87 +3,164 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { BlogPost } from '@/payload-types'
-import { ArrowRight, Clock } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { BlogPost as ImportedBlogPost } from '@/payload-types'
+import { ArrowUpRight, Clock, BookOpen } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-
-// Import utility functions
-import { getPostImageFromLayout, getPostExcerpt, getAuthorDisplayName } from '@/utils/postUtils'
+import { getPostImageFromLayout, getPostExcerpt } from '@/utils/postUtils'
 import { formatTimeAgo } from '@/utils/dateUtils'
+
+// Extend BlogPost type to include categories
+interface BlogPost extends ImportedBlogPost {
+  categories?: Array<{ id: string; name: string; [key: string]: any }>
+}
 
 interface NewsCardProps {
   post: BlogPost
 }
 
+// Calculate estimated reading time
+const calculateReadingTime = (text: string): number => {
+  const wordsPerMinute = 200
+  const wordCount = text.trim().split(/\s+/).length
+  return Math.max(1, Math.ceil(wordCount / wordsPerMinute))
+}
+
 export const NewsCard: React.FC<NewsCardProps> = ({ post }) => {
   const imageUrl = getPostImageFromLayout(post.layout)
-  const excerpt = getPostExcerpt(post, { maxLength: 120, prioritizeCoverSubheading: false })
-  const authorName = getAuthorDisplayName(post.author)
+  const excerpt = getPostExcerpt(post, { maxLength: 150, prioritizeCoverSubheading: false })
   const timeAgo = formatTimeAgo(post.createdAt)
+  const categories = post.categories
+
+  // Calculate reading time from excerpt
+  const readingTime = calculateReadingTime(excerpt || post.name)
+
+  // Get primary category for display
+  const primaryCategory =
+    categories && categories.length > 0 && typeof categories[0] === 'object'
+      ? categories[0].name
+      : null
+
+  // Brand color instead of dynamic color
+  const brandColor = '#2aaac6'
 
   return (
-    <Card className="group overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-      <Link href={`/news/${post.slug}`} className="block">
-        <div className="relative aspect-[16/9] overflow-hidden">
+    <article className="group shadow-md relative flex flex-col h-full overflow-hidden rounded-xl bg-white transition-all duration-500 hover:translate-y-[-4px]">
+      {/* Card top accent line */}
+      <div
+        className="absolute top-0 left-0 right-0 h-1 z-10 opacity-80 group-hover:opacity-100 transition-opacity"
+        style={{ backgroundColor: brandColor }}
+      />
+
+      {/* Main card container with subtle shadow that intensifies on hover */}
+      <div className="flex flex-col h-full shadow-sm group-hover:shadow-xl transition-shadow duration-500">
+        {/* Image section with gradient overlay */}
+        <div className="relative aspect-[16/10] w-full overflow-hidden">
           {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={post.name}
-              width={1600}
-              height={900}
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
+            <>
+              <Image
+                src={imageUrl}
+                alt={post.name}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+            </>
           ) : (
-            <div className="h-full w-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-              <span className="text-xs sm:text-sm text-gray-400">No image</span>
+            <div
+              className="h-full w-full flex items-center justify-center"
+              style={{
+                background: `linear-gradient(135deg, ${brandColor}33, ${brandColor}22)`,
+                boxShadow: `inset 0 0 30px ${brandColor}11`,
+              }}
+            >
+              <span className="text-sm font-medium opacity-60" style={{ color: brandColor }}>
+                {primaryCategory || 'News Article'}
+              </span>
             </div>
           )}
-          <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
-            {post.author && typeof post.author === 'object' && (
-              <Badge
-                variant="secondary"
-                className="bg-black/20 text-white backdrop-blur-sm text-[10px] sm:text-xs"
+
+          {/* Category pill - positioned in top left */}
+          {primaryCategory && (
+            <div className="absolute top-3 left-3 z-10">
+              <div
+                className="px-2.5 py-1 rounded-full text-xs font-medium tracking-wide text-white shadow-md"
+                style={{ backgroundColor: brandColor }}
               >
-                {authorName}
-              </Badge>
-            )}
+                {primaryCategory}
+              </div>
+            </div>
+          )}
+
+          {/* Reading time indicator */}
+          <div className="absolute top-3 right-3 z-10">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/30 backdrop-blur-md text-white text-xs">
+              <BookOpen className="h-3 w-3" />
+              <span>{readingTime} min read</span>
+            </div>
           </div>
         </div>
-      </Link>
-      <CardContent className="p-3 sm:p-4 md:p-5">
-        <div className="flex items-center text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-3 gap-2 sm:gap-3 flex-wrap">
-          <span className="flex items-center">
-            <Clock className="mr-1 h-3 w-3 sm:h-3.5 sm:w-3.5" />
-            {timeAgo}
-          </span>
+
+        {/* Content section */}
+        <div className="flex flex-col flex-grow p-5">
+          {/* Article metadata with date only */}
+          <div className="flex items-center text-xs text-gray-500 mb-3">
+            <span className="flex items-center">
+              <Clock className="mr-1 h-3.5 w-3.5 text-gray-400" />
+              {timeAgo}
+            </span>
+          </div>
+
+          {/* Title with simple hover effect */}
+          <h3 className="font-sans text-base leading-tight text-gray-900 hover:text-[#2aaac6] transition-colors">
+            <Link href={`/news/${post.slug}`}>{post.name}</Link>
+          </h3>
+
+          {excerpt && (
+            <p className="font-sans text-[15px] text-gray-600 line-clamp-3 mb-2 leading-relaxed">
+              {excerpt}
+            </p>
+          )}
+
+          {/* Spacer to push the footer to the bottom */}
+          <div className="flex-grow" />
+
+          {/* Card footer with additional categories and read more link */}
+          <div className="pt-4 mt-auto border-t border-gray-100 flex items-center justify-between">
+            {/* Additional categories as subtle badges */}
+            <div className="flex flex-wrap gap-1.5">
+              {categories &&
+                Array.isArray(categories) &&
+                categories.length > 1 &&
+                categories.slice(1, 3).map((category) =>
+                  typeof category === 'object' && category.name ? (
+                    <Badge
+                      key={category.id}
+                      variant="outline"
+                      className="text-xs font-normal px-1.5 py-0"
+                      style={{ borderColor: `${brandColor}40`, color: brandColor }}
+                    >
+                      {category.name}
+                    </Badge>
+                  ) : null,
+                )}
+            </div>
+
+            {/* Read more link with animated arrow */}
+            <Link
+              href={`/news/${post.slug}`}
+              className="flex items-center text-sm font-medium transition-colors hover:text-slate-900"
+              style={{ color: brandColor }}
+            >
+              <span className="mr-1">Read article</span>
+              <span className="relative overflow-hidden inline-block w-4 h-4">
+                <ArrowUpRight className="h-4 w-4 absolute transform transition-transform duration-300 group-hover:translate-x-4 group-hover:translate-y-[-4px]" />
+                <ArrowUpRight className="h-4 w-4 absolute transform transition-transform duration-300 translate-x-[-16px] translate-y-[16px] group-hover:translate-x-0 group-hover:translate-y-0" />
+              </span>
+            </Link>
+          </div>
         </div>
-
-        <h3 className="font-serif text-base sm:text-lg font-bold leading-tight line-clamp-2 mb-2 sm:mb-3 text-gray-800 group-hover:text-[#2aaac6] transition-colors">
-          <Link href={`/news/${post.slug}`} className="hover:underline">
-            {post.name}
-          </Link>
-        </h3>
-
-        {excerpt && (
-          <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 sm:line-clamp-3 mb-3 sm:mb-4">
-            {excerpt}
-          </p>
-        )}
-
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
-          className="p-0 h-auto text-[#2aaac6] hover:bg-transparent hover:text-[#2aaac6]/80 group-hover:text-[#218ba0]"
-        >
-          <Link href={`/news/${post.slug}`} className="flex items-center">
-            <span className="text-xs sm:text-sm">Read more</span>
-            <ArrowRight className="ml-1 sm:ml-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </article>
   )
 }

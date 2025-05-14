@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-const POSTS_PER_PAGE = 9
+const POSTS_PER_PAGE = 100
 
 export const NewsList: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([])
@@ -23,21 +23,26 @@ export const NewsList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState('-createdAt') 
+  const [sortBy, setSortBy] = useState('-createdAt')
   useEffect(() => {
     const fetchPosts = async () => {
       setIsLoading(true)
       try {
+        const whereConditions: Array<Record<string, any>> = []
+
+        if (searchTerm) {
+          whereConditions.push({ name: { like: searchTerm } })
+        }
+
         const queryParams = new URLSearchParams({
           limit: String(POSTS_PER_PAGE),
           page: String(currentPage),
           sort: sortBy,
-          depth: '2',
+          depth: '1',
         })
 
-        if (searchTerm) {
-          // Basic search on 'name' field. For more complex search, consider a dedicated search endpoint.
-          queryParams.append('where[name][like]', searchTerm)
+        if (whereConditions.length > 0) {
+          queryParams.set('where', JSON.stringify({ and: whereConditions }))
         }
 
         const response = await fetch(`/api/blogPosts?${queryParams.toString()}`)
@@ -70,12 +75,24 @@ export const NewsList: React.FC = () => {
     setCurrentPage(1) // Reset to first page on new sort
   }
 
+  const goToPreviousPage = () => {
+    setIsLoading(true) // Set loading immediately
+    setCurrentPage((prev) => Math.max(1, prev - 1))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const goToNextPage = () => {
+    setIsLoading(true) // Set loading immediately
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <div className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
       {/* Header and Filters */}
       <div className="mb-6 sm:mb-8 md:mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-1 sm:mb-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-sans font-bold text-gray-900 mb-1 sm:mb-2">
             Latest News
           </h1>
           <p className="text-gray-600 text-sm sm:text-base md:text-lg">
@@ -109,13 +126,13 @@ export const NewsList: React.FC = () => {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
           {Array.from({ length: POSTS_PER_PAGE }).map((_, i) => (
             <Skeleton key={i} className="aspect-[16/9] rounded-lg sm:rounded-xl mb-4" />
           ))}
         </div>
       ) : posts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
           {posts.map((post) => (
             <NewsCard key={post.id} post={post} />
           ))}
@@ -137,7 +154,7 @@ export const NewsList: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            onClick={goToPreviousPage}
             disabled={currentPage === 1}
             className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#2aaac6]/10 hover:text-[#2aaac6]"
           >
@@ -149,7 +166,7 @@ export const NewsList: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            onClick={goToNextPage}
             disabled={currentPage === totalPages}
             className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#2aaac6]/10 hover:text-[#2aaac6]"
           >
