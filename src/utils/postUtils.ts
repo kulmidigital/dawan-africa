@@ -78,12 +78,12 @@ export const getAuthorDisplayName = (author: BlogPost['author']): string => {
   if (!author) return 'Unknown Author'
 
   if (typeof author === 'object' && author !== null) {
-    // Assuming 'User' type has 'name' or 'email'
-    const user = author as User
-    return user.name || user.email?.split('@')[0] || 'Unknown Author'
+    const user = author as User // author is type User here
+    // The User type does not have a 'name' property.
+    // Reverting to use email, consistent with original component logic.
+    return user.email?.split('@')[0] || 'Unknown Author'
   }
   // If author is just an ID (string or number), we can't resolve the name here
   // This utility assumes the author object is populated.
-  // For more complex scenarios, you might need to fetch user details by ID.
   return 'Unknown Author' // Fallback if author is an ID or unhandled type
 }
