@@ -44,11 +44,11 @@ export const FeaturedPostCard: React.FC<FeaturedPostCardProps> = ({
                   {formatTimeAgo(latestPost.createdAt)}
                 </Badge>
               </div>
-              <h1 className="mb-2 sm:mb-3 font-serif text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-white">
+              <h1 className="mb-2 sm:mb-3 font-sans text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-white">
                 {latestPost.name}
               </h1>
               {excerpt && (
-                <p className="mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 max-w-xl font-serif text-xs sm:text-sm md:text-base leading-relaxed text-gray-200">
+                <p className="mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 max-w-xl font-sans text-xs sm:text-sm md:text-base leading-relaxed text-gray-200">
                   {excerpt}
                 </p>
               )}
@@ -65,11 +65,11 @@ export const FeaturedPostCard: React.FC<FeaturedPostCardProps> = ({
         </div>
       ) : (
         <CardContent className="p-4 sm:p-6">
-          <h1 className="mb-3 font-serif text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-gray-900">
+          <h1 className="mb-3 font-sans text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-gray-900">
             {latestPost.name}
           </h1>
           {excerpt && (
-            <p className="mb-4 font-serif text-sm sm:text-base leading-relaxed text-gray-700">
+            <p className="mb-4 font-sans text-sm sm:text-base leading-relaxed text-gray-700">
               {excerpt}
             </p>
           )}

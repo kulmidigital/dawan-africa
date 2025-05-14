@@ -26,7 +26,7 @@ export const RecentNewsList: React.FC<RecentNewsListProps> = ({
       >
         <div className="flex items-center gap-1 sm:gap-2">
           <Newspaper className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: '#2aaac6' }} />
-          <h2 className="font-serif text-base sm:text-xl font-bold text-gray-900">Recent News</h2>
+          <h2 className="font-sans text-base sm:text-xl font-bold text-gray-900">Recent News</h2>
         </div>
         <div className="text-[10px] sm:text-xs text-[#2aaac6] font-medium">
           {postsToShow} articles

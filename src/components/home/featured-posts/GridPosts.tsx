@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { BlogPost} from '@/payload-types'
+import { BlogPost } from '@/payload-types'
 import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 
@@ -56,7 +56,7 @@ export const GridPosts: React.FC<GridPostsProps> = ({ posts }) => {
                     </>
                   )}
                 </div>
-                <h3 className="font-serif text-sm sm:text-base font-bold line-clamp-2 mb-1.5 sm:mb-2 group-hover:text-[#2aaac6] transition-colors break-words">
+                <h3 className="font-sans text-sm sm:text-base font-bold line-clamp-2 mb-1.5 sm:mb-2 group-hover:text-[#2aaac6] transition-colors break-words">
                   <Link href={`/news/${post.slug}`} className="hover:underline">
                     {post.name}
                   </Link>

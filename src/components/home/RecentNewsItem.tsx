@@ -2,21 +2,20 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { BlogPost } from '@/payload-types' 
+import { BlogPost } from '@/payload-types'
 import { Clock } from 'lucide-react'
 
 interface RecentNewsItemProps {
   post: BlogPost
-  imageUrl: string | null 
+  imageUrl: string | null
   formatTimeAgo: (dateString: string) => string
 }
 
 export const RecentNewsItem: React.FC<RecentNewsItemProps> = ({
   post,
-  imageUrl, 
+  imageUrl,
   formatTimeAgo,
 }) => {
-
   return (
     <div className="group p-2 sm:p-3 transition-colors hover:bg-gray-50">
       <div className="flex gap-2 sm:gap-3">
@@ -25,7 +24,7 @@ export const RecentNewsItem: React.FC<RecentNewsItemProps> = ({
             <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 text-[#2aaac6]" />
             {formatTimeAgo(post.createdAt)}
           </div>
-          <h3 className="mb-1 sm:mb-2 font-serif text-xs sm:text-sm font-medium text-gray-900 transition-colors group-hover:text-[#2aaac6] line-clamp-2">
+          <h3 className="mb-1 sm:mb-2 font-sans text-xs sm:text-sm font-medium text-gray-900 transition-colors group-hover:text-[#2aaac6] line-clamp-2">
             <Link href={`/news/${post.slug}`} className="hover:underline">
               {post.name}
             </Link>

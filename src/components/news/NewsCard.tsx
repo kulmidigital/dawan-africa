@@ -2,73 +2,37 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { BlogPost, Media, User } from '@/payload-types'
-import { formatDistanceToNow } from 'date-fns'
+import Image from 'next/image'
+import { BlogPost } from '@/payload-types'
 import { ArrowRight, Clock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
+// Import utility functions
+import { getPostImageFromLayout, getPostExcerpt, getAuthorDisplayName } from '@/utils/postUtils'
+import { formatTimeAgo } from '@/utils/dateUtils'
+
 interface NewsCardProps {
   post: BlogPost
 }
 
-// Helper function to get post image (similar to other components)
-const getPostImage = (post: BlogPost): string | null => {
-  if (!post.layout) return null
-  for (const block of post.layout) {
-    if (block.blockType === 'cover' && block.image) {
-      const media = typeof block.image === 'string' ? null : (block.image as Media)
-      return media?.url || null
-    }
-  }
-  for (const block of post.layout) {
-    if (block.blockType === 'image' && block.image) {
-      const media = typeof block.image === 'string' ? null : (block.image as Media)
-      return media?.url || null
-    }
-  }
-  return null
-}
-
-// Helper function to get post excerpt (similar to other components)
-const getPostExcerpt = (post: BlogPost, maxLength = 120): string => {
-  if (!post.layout) return ''
-  for (const block of post.layout) {
-    if (block.blockType === 'richtext' && block.content?.root?.children?.[0]?.text) {
-      const text = block.content.root.children[0].text as string
-      return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
-    }
-  }
-  return ''
-}
-
-// Format time ago
-const formatTimeAgo = (dateString: string): string => {
-  return formatDistanceToNow(new Date(dateString), { addSuffix: true })
-}
-
-// Get author name
-const getAuthorName = (author: string | User | null): string => {
-  if (!author) return 'Unknown Author'
-  if (typeof author === 'object') {
-    return author.email?.split('@')[0] || 'Unknown Author'
-  }
-  return 'Unknown Author'
-}
-
 export const NewsCard: React.FC<NewsCardProps> = ({ post }) => {
-  const imageUrl = getPostImage(post)
-  const excerpt = getPostExcerpt(post)
+  const imageUrl = getPostImageFromLayout(post.layout)
+  const excerpt = getPostExcerpt(post, { maxLength: 120, prioritizeCoverSubheading: false })
+  const authorName = getAuthorDisplayName(post.author)
+  const timeAgo = formatTimeAgo(post.createdAt)
 
   return (
     <Card className="group overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <Link href={`/news/${post.slug}`} className="block">
         <div className="relative aspect-[16/9] overflow-hidden">
           {imageUrl ? (
-            <img
+            <Image
               src={imageUrl}
               alt={post.name}
+              width={1600}
+              height={900}
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
           ) : (
@@ -77,12 +41,12 @@ export const NewsCard: React.FC<NewsCardProps> = ({ post }) => {
             </div>
           )}
           <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
-            {post.author && typeof post.author === 'object' && post.author.email && (
+            {post.author && typeof post.author === 'object' && (
               <Badge
                 variant="secondary"
                 className="bg-black/20 text-white backdrop-blur-sm text-[10px] sm:text-xs"
               >
-                {getAuthorName(post.author)}
+                {authorName}
               </Badge>
             )}
           </div>
@@ -92,7 +56,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ post }) => {
         <div className="flex items-center text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-3 gap-2 sm:gap-3 flex-wrap">
           <span className="flex items-center">
             <Clock className="mr-1 h-3 w-3 sm:h-3.5 sm:w-3.5" />
-            {formatTimeAgo(post.createdAt)}
+            {timeAgo}
           </span>
         </div>
 

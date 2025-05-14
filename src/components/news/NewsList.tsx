@@ -23,8 +23,7 @@ export const NewsList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState('-createdAt') // Default sort by newest
-
+  const [sortBy, setSortBy] = useState('-createdAt') 
   useEffect(() => {
     const fetchPosts = async () => {
       setIsLoading(true)

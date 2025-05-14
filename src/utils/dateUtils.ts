@@ -21,6 +21,6 @@ export const formatTimeAgo = (dateString: string): string => {
     return formatDistanceToNow(date, { addSuffix: true })
   } catch (error) {
     console.error('Error in formatTimeAgo:', error)
-    return 'Date unavailable' // Fallback for any unexpected error
+    return 'Date unavailable' 
   }
 }

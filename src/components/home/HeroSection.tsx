@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { BlogPost} from '@/payload-types'
+import { BlogPost } from '@/payload-types'
 
 // Import shadcn components
 import { Card, CardContent } from '@/components/ui/card'
@@ -74,7 +74,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <div className="container mx-auto px-4">
           <Card>
             <CardContent className="p-6">
-              <p className="text-gray-500">No recent news available.</p>
+              <p className="text-gray-500 font-sans">No recent news available.</p>
             </CardContent>
           </Card>
         </div>
@@ -99,7 +99,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const POSTS_TO_SHOW = 5
 
   return (
-    <section className="bg-gradient-to-b from-slate-100 to-white py-4 sm:py-6">
+    <section className="bg-gradient-to-b from-slate-100 to-white py-4 sm:py-6 font-sans">
       {/* Flash News */}
       <div className="container mx-auto px-4">
         {/* Main grid layout with equal heights */}

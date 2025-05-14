@@ -27,7 +27,7 @@ export const ListPosts: React.FC<ListPostsProps> = ({ posts }) => {
         </div>
         <span className="relative bg-gradient-to-b from-white to-gray-50 px-4 sm:px-6 inline-flex items-center">
           <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-[#2aaac6] mr-2" />
-          <h3 className="font-serif text-lg sm:text-xl font-bold text-gray-800">Recent Articles</h3>
+          <h3 className="font-sans text-lg sm:text-xl font-bold text-gray-800">Recent Articles</h3>
         </span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-x-5 sm:gap-y-4 w-full">
@@ -59,7 +59,7 @@ export const ListPosts: React.FC<ListPostsProps> = ({ posts }) => {
                   <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 flex-shrink-0" />
                   {formatTimeAgo(post.createdAt)}
                 </div>
-                <h4 className="font-serif text-xs sm:text-sm font-bold leading-tight line-clamp-2 group-hover:text-[#2aaac6] transition-colors">
+                <h4 className="font-sans text-xs sm:text-sm font-bold leading-tight line-clamp-2 group-hover:text-[#2aaac6] transition-colors">
                   <Link href={`/news/${post.slug}`} className="hover:underline">
                     {post.name}
                   </Link>

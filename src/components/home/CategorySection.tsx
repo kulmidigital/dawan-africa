@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { BlogCategory, BlogPost} from '@/payload-types'
+import { BlogCategory, BlogPost } from '@/payload-types'
 import {
   Building2,
   CircleDollarSign,
@@ -125,7 +125,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categories }) 
 
               {/* Overlay with category name */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent flex flex-col justify-end p-4">
-                <div className={`text-white font-serif font-bold text-2xl`}>{category.name}</div>
+                <div className={`text-white font-sans font-bold text-2xl`}>{category.name}</div>
               </div>
             </div>
 

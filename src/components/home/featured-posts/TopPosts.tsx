@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { BlogPost} from '@/payload-types'
+import { BlogPost } from '@/payload-types'
 import { ArrowRight, Clock } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
@@ -62,7 +62,7 @@ export const TopPosts: React.FC<TopPostsProps> = ({ posts }) => {
                   </span>
                 )}
               </div>
-              <h3 className="font-serif text-base sm:text-lg font-bold leading-tight line-clamp-2 mb-2 sm:mb-3 text-gray-800 group-hover:text-[#2aaac6] transition-colors">
+              <h3 className="font-sans text-base sm:text-lg font-bold leading-tight line-clamp-2 mb-2 sm:mb-3 text-gray-800 group-hover:text-[#2aaac6] transition-colors">
                 <Link href={`/news/${post.slug}`} className="hover:underline">
                   {post.name}
                 </Link>

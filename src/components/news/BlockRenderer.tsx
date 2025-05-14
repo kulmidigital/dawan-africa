@@ -1,55 +1,244 @@
 'use client'
 
 import React from 'react'
+import Image from 'next/image'
 import { Media } from '@/payload-types'
+import { ExternalLink, FileText, Quote } from 'lucide-react'
 
 interface BlockRendererProps {
   block: any // Using 'any' for now, should be replaced with specific block types
+  hideTextOverlay?: boolean
 }
 
 const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
-  // Handle Payload CMS's richtext structure which might have text property directly
-  // rather than the Lexical structure we expected
+  // HTML string content - Render directly
   if (typeof content === 'string') {
     return (
       <div
-        className="prose prose-sm sm:prose-base lg:prose-lg max-w-none text-gray-800"
+        className="prose prose-sm sm:prose-base lg:prose-lg max-w-none article-content"
         dangerouslySetInnerHTML={{ __html: content }}
       />
     )
   }
 
   // Check if content might be stored under a different property name
-  const blockContent = content || {}
+  const blockContent = content ?? {}
 
   // Check if we have text content directly (some Payload configs use this structure)
   if (blockContent.text) {
     return (
       <div
-        className="prose prose-sm sm:prose-base lg:prose-lg max-w-none text-gray-800"
+        className="prose prose-sm sm:prose-base lg:prose-lg max-w-none article-content"
         dangerouslySetInnerHTML={{ __html: blockContent.text }}
       />
     )
   }
 
-  // Standard Lexical structure
+  // Lexical editor structure handling
   if (blockContent.root?.children) {
+    // Convert Lexical structure to JSX
     return (
-      <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none text-gray-800">
-        {blockContent.root.children.map((child: any, index: number) => {
-          if (child.type === 'paragraph') {
-            return <p key={index}>{child.children.map((span: any) => span.text).join('')}</p>
+      <div className="article-content">
+        {blockContent.root.children.map((node: any, index: number) => {
+          switch (node.type) {
+            case 'paragraph':
+              return (
+                <p key={index} className="relative group">
+                  {node.children.map((textNode: any, i: number) => {
+                    // Handle text formatting
+                    const textContent = textNode.text
+                    let className = ''
+
+                    if (textNode.format & 1) className += ' font-bold'
+                    if (textNode.format & 2) className += ' italic'
+                    if (textNode.format & 4) className += ' underline'
+                    if (textNode.format & 8) className += ' line-through'
+                    if (textNode.format & 16) className += ' text-sm'
+                    if (textNode.format & 32) className += ' uppercase'
+                    if (textNode.format & 64)
+                      className += ' text-code inline bg-gray-100 px-1.5 py-0.5 rounded font-mono'
+
+                    return (
+                      <span key={i} className={className || undefined}>
+                        {textContent}
+                      </span>
+                    )
+                  })}
+                </p>
+              )
+            case 'heading':
+              // Create the appropriate heading level
+              const tag = node.tag || 2 // Default to h2 if not specified
+              const headingContent = node.children.map((textNode: any) => textNode.text).join('')
+
+              if (tag === 1) {
+                return (
+                  <h1 key={index} className="scroll-mt-24 group">
+                    <a
+                      href={`#${headingContent.toLowerCase().replace(/\s+/g, '-')}`}
+                      className="no-underline"
+                    >
+                      {headingContent}
+                      <span className="opacity-0 group-hover:opacity-100 ml-2 text-blue-500 transition-opacity">
+                        #
+                      </span>
+                    </a>
+                  </h1>
+                )
+              } else if (tag === 2) {
+                return (
+                  <h2
+                    key={index}
+                    className="scroll-mt-24 group"
+                    id={headingContent.toLowerCase().replace(/\s+/g, '-')}
+                  >
+                    <a
+                      href={`#${headingContent.toLowerCase().replace(/\s+/g, '-')}`}
+                      className="no-underline"
+                    >
+                      {headingContent}
+                      <span className="opacity-0 group-hover:opacity-100 ml-2 text-blue-500 transition-opacity">
+                        #
+                      </span>
+                    </a>
+                  </h2>
+                )
+              } else if (tag === 3) {
+                return (
+                  <h3
+                    key={index}
+                    className="scroll-mt-24 group"
+                    id={headingContent.toLowerCase().replace(/\s+/g, '-')}
+                  >
+                    <a
+                      href={`#${headingContent.toLowerCase().replace(/\s+/g, '-')}`}
+                      className="no-underline"
+                    >
+                      {headingContent}
+                      <span className="opacity-0 group-hover:opacity-100 ml-2 text-blue-500 transition-opacity">
+                        #
+                      </span>
+                    </a>
+                  </h3>
+                )
+              } else if (tag === 4) {
+                return <h4 key={index}>{headingContent}</h4>
+              } else if (tag === 5) {
+                return <h5 key={index}>{headingContent}</h5>
+              } else {
+                return <h6 key={index}>{headingContent}</h6>
+              }
+            case 'list':
+              const ListTag = node.listType === 'number' ? 'ol' : 'ul'
+              return (
+                <ListTag
+                  key={index}
+                  className={node.listType === 'number' ? 'custom-ol' : 'custom-ul'}
+                >
+                  {node.children.map((listItem: any, i: number) => (
+                    <li key={i} className="my-2">
+                      {listItem.children.map((paraNode: any, j: number) => (
+                        <React.Fragment key={j}>
+                          {paraNode.children
+                            .map((textNode: any, k: number) => textNode.text)
+                            .join('')}
+                        </React.Fragment>
+                      ))}
+                    </li>
+                  ))}
+                </ListTag>
+              )
+            case 'quote':
+              return (
+                <blockquote
+                  key={index}
+                  className="relative pl-6 py-2 my-8 text-gray-700 border-l-4 border-blue-500 bg-blue-50/50 rounded-r-lg"
+                >
+                  <Quote className="absolute left-4 top-4 text-blue-300/30 h-16 w-16 -z-10" />
+                  <div className="relative z-10">
+                    {node.children.map((paraNode: any, i: number) => (
+                      <p key={i} className="italic not-italic">
+                        {paraNode.children
+                          .map((textNode: any, j: number) => textNode.text)
+                          .join('')}
+                      </p>
+                    ))}
+                  </div>
+                </blockquote>
+              )
+            case 'code':
+              return (
+                <div key={index} className="my-6">
+                  <div className="flex items-center justify-between bg-gray-800 text-gray-200 px-4 py-2 text-sm rounded-t-md">
+                    <div className="flex items-center">
+                      <FileText className="h-4 w-4 mr-2" />
+                      <span>Code</span>
+                    </div>
+                    <button
+                      className="text-gray-400 hover:text-white transition-colors"
+                      onClick={() =>
+                        navigator.clipboard.writeText(
+                          node.children.map((textNode: any) => textNode.text).join('\n'),
+                        )
+                      }
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <pre className="bg-gray-900 p-4 rounded-b-md overflow-auto text-gray-100">
+                    <code>{node.children.map((textNode: any) => textNode.text).join('\n')}</code>
+                  </pre>
+                </div>
+              )
+            case 'image':
+              if (node.src) {
+                return (
+                  <figure key={index} className="my-8">
+                    <div className="rounded-lg overflow-hidden shadow-lg">
+                      <Image
+                        src={node.src}
+                        alt={node.altText || ''}
+                        width={node.width || 800}
+                        height={node.height || 600}
+                        className="w-full h-auto"
+                      />
+                    </div>
+                    {node.caption && (
+                      <figcaption className="text-center text-gray-600 mt-3 text-sm">
+                        {node.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                )
+              }
+              return null
+            case 'link':
+              const url = node.url || ''
+              const isExternal = url.startsWith('http')
+              return (
+                <a
+                  key={index}
+                  href={url}
+                  target={isExternal ? '_blank' : undefined}
+                  rel={isExternal ? 'noopener noreferrer' : undefined}
+                  className="text-blue-600 hover:text-blue-800 underline inline-flex items-center"
+                >
+                  {node.children.map((textNode: any) => textNode.text).join('')}
+                  {isExternal && <ExternalLink className="ml-1 h-3 w-3" />}
+                </a>
+              )
+            default:
+              // Handle any other node types
+              return <div key={index}>[Unsupported block type: {node.type}]</div>
           }
-          // Add more Lexical node types as needed (headings, lists, etc.)
-          return null
         })}
       </div>
     )
   }
 
   return (
-    <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none text-gray-800">
-      <p>[Content structure issue - could not render content]</p>
+    <div className="article-content">
+      <p className="text-gray-700 italic">[Content structure issue - could not render content]</p>
     </div>
   )
 }
@@ -59,25 +248,29 @@ const ImageBlock: React.FC<{ image: Media | string | null; altText?: string }> =
   altText,
 }) => {
   const imageUrl = typeof image === 'string' ? null : image?.url
-  const alt = altText || (typeof image === 'string' ? 'Image' : image?.alt || 'Article image')
+  const alt = altText ?? (typeof image === 'string' ? 'Image' : (image?.alt ?? 'Article image'))
+  const imageObj = typeof image === 'string' ? null : image
 
   if (!imageUrl)
     return (
-      <div className="my-4 sm:my-6 md:my-8 text-center text-gray-500">[Image not available]</div>
+      <div className="my-8 p-8 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500">
+        <FileText className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+        [Image not available]
+      </div>
     )
 
   return (
-    <figure className="my-4 sm:my-6 md:my-8">
-      <img
+    <figure className="my-8">
+      <div className="rounded-lg overflow-hidden shadow-lg transition-transform hover:scale-[1.01] duration-300">
+      <Image
         src={imageUrl}
         alt={alt}
-        className="w-full h-auto rounded-md sm:rounded-lg shadow-sm sm:shadow-md object-contain max-h-[300px] sm:max-h-[400px] md:max-h-[600px]"
-      />
-      {alt && (
-        <figcaption className="text-center text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
-          {alt}
-        </figcaption>
-      )}
+        width={imageObj?.width ?? 1200}
+        height={imageObj?.height ?? 800}
+          className="w-full h-auto object-contain max-h-[500px] sm:max-h-[600px] md:max-h-[700px]"
+        />
+      </div>
+      {alt && <figcaption className="text-center text-sm text-gray-600 mt-3">{alt}</figcaption>}
     </figure>
   )
 }
@@ -86,39 +279,66 @@ const CoverBlock: React.FC<{
   image?: Media | string | null
   heading?: any
   subheading?: string
-}> = ({ image, heading, subheading }) => {
+  hideTextOverlay?: boolean
+}> = ({ image, heading, subheading, hideTextOverlay }) => {
   const imageUrl = typeof image === 'string' ? null : image?.url
+  const imageObj = typeof image === 'string' ? null : image
 
-  // Simplified heading rendering
-  const headingText = heading?.root?.children?.[0]?.children?.[0]?.text || 'Cover Heading'
+  // Extract heading text from Lexical data structure if available
+  let headingText = 'Article Heading'
+
+  if (heading && typeof heading === 'object') {
+    // Try to extract from Lexical structure
+    if (heading.root?.children?.[0]?.children?.[0]?.text) {
+      headingText = heading.root.children[0].children[0].text
+    } else if (heading.children?.[0]?.text) {
+      headingText = heading.children[0].text
+    }
+  } else if (typeof heading === 'string') {
+    headingText = heading
+  }
 
   return (
-    <div className="my-6 sm:my-8 md:my-10 relative aspect-video md:aspect-[16/7] rounded-md sm:rounded-xl overflow-hidden shadow-md sm:shadow-xl min-h-[200px] sm:min-h-[250px] md:min-h-[300px]">
-      {imageUrl && (
-        <img
+    <div className="my-8 sm:my-10 md:my-12 relative rounded-xl overflow-hidden shadow-xl min-h-[300px] sm:min-h-[400px] md:min-h-[500px]">
+      {imageUrl ? (
+        // With image
+        <>
+        <Image
           src={imageUrl}
           alt={headingText}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+            fill
+            className="object-cover"
+            priority
+            sizes="(min-width: 1280px) 1200px, 100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        </>
+      ) : (
+        // Without image - gradient background
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-800"></div>
       )}
-      <div
-        className={`absolute inset-0 flex flex-col justify-center items-center text-center p-4 sm:p-6 md:p-8 bg-gradient-to-t ${imageUrl ? 'from-black/70 to-transparent' : 'from-gray-800 to-gray-700'}`}
-      >
-        <h2 className="text-xl sm:text-3xl md:text-5xl font-serif font-bold text-white mb-2 sm:mb-4 drop-shadow-md">
-          {headingText}
-        </h2>
-        {subheading && (
-          <p className="text-sm sm:text-base md:text-xl text-gray-200 max-w-2xl drop-shadow-sm">
-            {subheading}
-          </p>
+
+        {!hideTextOverlay && (
+        <div className="relative z-10 flex flex-col justify-center items-center text-center h-full p-6 sm:p-10 md:p-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 max-w-3xl drop-shadow-md">
+              {headingText}
+            </h2>
+            {subheading && (
+            <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-2xl font-light drop-shadow-sm">
+                {subheading}
+              </p>
+            )}
+        </div>
         )}
-      </div>
+
+      {/* Visual elements */}
+      <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-r from-white/0 via-white/10 to-white/0"></div>
     </div>
   )
 }
 
 // This component will map blockType to the actual rendering component
-export const BlockRenderer: React.FC<BlockRendererProps> = ({ block }) => {
+export const BlockRenderer: React.FC<BlockRendererProps> = ({ block, hideTextOverlay }) => {
   switch (block.blockType?.toLowerCase()) {
     case 'richtext':
     case 'richText':
@@ -129,16 +349,23 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ block }) => {
       return <ImageBlock image={block.image} altText={block.alt} />
     case 'cover':
       return (
-        <CoverBlock image={block.image} heading={block.heading} subheading={block.subheading} />
+        <CoverBlock
+          image={block.image}
+          heading={block.heading}
+          subheading={block.subheading}
+          hideTextOverlay={hideTextOverlay}
+        />
       )
     // Add cases for other block types like 'recentBlogPosts', etc.
     // case 'recentBlogPosts':
     //   return <RecentBlogPostsBlock posts={block.shownPosts} />;
     default:
       return (
-        <div className="my-4 p-3 sm:p-4 bg-red-100 border border-red-300 rounded-md text-sm sm:text-base">
-          <p className="font-semibold text-red-700">Unsupported block type: {block.blockType}</p>
-          <pre className="text-xs text-red-600 mt-2 overflow-x-auto">
+        <div className="my-8 p-6 bg-amber-50 border border-amber-300 rounded-lg">
+          <p className="font-medium text-amber-800 mb-3">
+            Unsupported content block: {block.blockType}
+          </p>
+          <pre className="text-xs bg-white/50 p-4 rounded border border-amber-200 text-amber-700 overflow-x-auto">
             {JSON.stringify(block, null, 2)}
           </pre>
         </div>

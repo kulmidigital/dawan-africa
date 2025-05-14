@@ -68,7 +68,7 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-[#2aaac6]" strokeWidth={2.5} />
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-gray-900">
+              <h2 className="font-sans text-xl sm:text-2xl font-bold text-gray-900">
                 More Stories
               </h2>
             </div>

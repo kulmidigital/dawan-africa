@@ -2,11 +2,11 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { BlogPost} from '@/payload-types' 
+import { BlogPost } from '@/payload-types'
 import { ArrowRight, Calendar } from 'lucide-react'
 import Image from 'next/image'
 
-import { Card } from '@/components/ui/card' 
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
@@ -37,7 +37,7 @@ export const MainFeaturedPostDisplay: React.FC<MainFeaturedPostDisplayProps> = (
             />
           ) : (
             <div className="h-full w-full bg-gradient-to-r from-blue-50 to-teal-50 flex items-center justify-center">
-              <span className="text-[#2aaac6]/70 text-base sm:text-xl font-serif font-bold">
+              <span className="text-[#2aaac6]/70 text-base sm:text-xl font-sans font-bold">
                 Featured Story
               </span>
             </div>
@@ -59,7 +59,7 @@ export const MainFeaturedPostDisplay: React.FC<MainFeaturedPostDisplayProps> = (
                   </span>
                 )}
               </div>
-              <h2 className="mb-2 sm:mb-3 font-serif text-lg sm:text-xl md:text-2xl font-bold leading-tight text-white break-words">
+              <h2 className="mb-2 sm:mb-3 font-sans text-lg sm:text-xl md:text-2xl font-bold leading-tight text-white break-words">
                 <Link href={`/news/${post.slug}`} className="hover:underline">
                   {post.name}
                 </Link>

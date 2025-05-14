@@ -22,7 +22,7 @@ async function getPostBySlug(slug: string): Promise<BlogPost | null> {
         },
       },
       limit: 1,
-      depth: 5, // Increased depth to ensure nested content is fully loaded
+      depth: 5,
     })
     return response.docs[0] || null
   } catch (error) {
@@ -81,32 +81,6 @@ export default async function NewsArticlePage({
     notFound() // Triggers the not-found page
   }
 
-  // Debug the post structure to understand what's coming from the CMS
-  console.log(
-    'Post structure:',
-    JSON.stringify(
-      {
-        id: post.id,
-        name: post.name,
-        slug: post.slug,
-        layoutBlocks: post.layout?.map((block) => ({
-          blockType: block.blockType,
-          hasContent: block.hasOwnProperty('content'),
-          keys: Object.keys(block), // Log all available keys in each block
-        })),
-      },
-      null,
-      2,
-    ),
-  )
-
-  // Log the first richtext block in full to examine its structure
-  const firstRichtextBlock = post.layout?.find(
-    (block) => block.blockType.toLowerCase() === 'richtext',
-  )
-  if (firstRichtextBlock) {
-    console.log('First richtext block full structure:', JSON.stringify(firstRichtextBlock, null, 2))
-  }
 
   return (
     <main className="bg-gray-50 min-h-screen">
