@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
+import FootballSheet from '@/components/football/FootballSheet'
 
 interface WeatherData {
   temperature: number
@@ -395,6 +396,16 @@ const Header: React.FC = () => {
                     <Link href="/news">All News</Link>
                   </Button>
 
+                  {/* Add Football button in desktop navigation */}
+                  <FootballSheet>
+                    <Button
+                      variant="ghost"
+                      className="text-gray-700 hover:text-[#2aaac6] hover:bg-transparent rounded-md"
+                    >
+                      Football
+                    </Button>
+                  </FootballSheet>
+
                   {categories.map((category) => (
                     <Button
                       key={category.id}
@@ -438,7 +449,7 @@ const Header: React.FC = () => {
       {isMenuOpen && (
         <div className="lg:hidden border-t border-gray-200 bg-white">
           <div className="container mx-auto px-4 py-4">
-            {/* Mobile menu header with social/date/weather */}
+            {/* Mobile menu header with social/date/weather/football */}
             <div className="mb-4 pb-4 border-b border-gray-100">
               {/* Social Media */}
               <div className="flex space-x-4 mb-3 sm:hidden">
@@ -523,6 +534,16 @@ const Header: React.FC = () => {
               >
                 All News
               </Link>
+
+              {/* Add Football button in mobile navigation */}
+              <FootballSheet>
+                <button
+                  className="text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6] w-full"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Football
+                </button>
+              </FootballSheet>
 
               <div className="pt-2 pb-1">
                 <Badge
