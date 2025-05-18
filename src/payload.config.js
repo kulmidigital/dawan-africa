@@ -30,9 +30,6 @@ export default buildConfig({
         Icon,
       },
     },
-    importMap: {
-      baseDir: path.resolve(dirname),
-    },
   },
   collections: [Users, Media, BlogPost, BlogCategories],
   editor: lexicalEditor(),
