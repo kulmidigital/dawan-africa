@@ -25,15 +25,15 @@ const FootballSheet: React.FC<FootballSheetProps> = ({ children }) => {
   const getCompetitionName = (id: string) => {
     const competitions = {
       'premier-league': 'Premier League',
-      laliga: 'La Liga',
+      'laliga': 'La Liga',
       'serie-a': 'Serie A',
-      bundesliga: 'Bundesliga',
+      'bundesliga': 'Bundesliga',
       'ligue-1': 'Ligue 1',
       'champions-league': 'UEFA Champions League',
       'europa-league': 'Europa League',
       'conference-league': 'Europa Conference League',
       'saudi-pro-league': 'Saudi Pro League',
-      mls: 'USA Major League Soccer',
+      'mls': 'USA Major League Soccer',
     }
     return competitions[id as keyof typeof competitions] || ''
   }

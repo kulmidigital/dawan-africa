@@ -42,7 +42,7 @@ const Football: React.FC<FootballProps> = ({ selectedCompetition, onSelectCompet
             <li key={competition.id}>
               <button
                 onClick={() => onSelectCompetition(competition.id)}
-                className="w-full text-left px-4 py-3 rounded-md hover:bg-gray-100 flex items-center justify-between group"
+                className="w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center justify-between group"
               >
                 <span className="font-medium text-gray-800">{competition.name}</span>
                 <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-[#2aaac6] group-hover:translate-x-1 transition-transform" />
