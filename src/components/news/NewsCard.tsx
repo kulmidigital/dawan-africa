@@ -9,13 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { getPostImageFromLayout, getPostExcerpt } from '@/utils/postUtils'
 import { formatTimeAgo } from '@/utils/dateUtils'
 
-// Extend BlogPost type to include categories
-interface BlogPost extends ImportedBlogPost {
-  categories?: Array<{ id: string; name: string; [key: string]: any }>
-}
-
 interface NewsCardProps {
-  post: BlogPost
+  post: ImportedBlogPost
 }
 
 // Calculate estimated reading time
@@ -37,7 +32,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ post }) => {
   // Get primary category for display
   const primaryCategory =
     categories && categories.length > 0 && typeof categories[0] === 'object'
-      ? categories[0].name
+      ? (categories[0] as { name: string }).name // Type assertion for clarity
       : null
 
   // Brand color instead of dynamic color
@@ -75,7 +70,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ post }) => {
               }}
             >
               <span className="text-sm font-medium opacity-60" style={{ color: brandColor }}>
-                {primaryCategory || 'News Article'}
+                {primaryCategory ?? 'News Article'}
               </span>
             </div>
           )}
