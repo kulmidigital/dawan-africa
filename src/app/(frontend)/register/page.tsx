@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { RegisterForm } from '@/components/auth/RegisterForm'
 import { useAuth } from '@/hooks/useAuth'
@@ -28,7 +28,15 @@ export default function RegisterPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 pb-12 pt-16 sm:pt-24">
-      <RegisterForm />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center flex-grow">
+            <div className="animate-pulse text-slate-500 text-sm">Loading form...</div>
+          </div>
+        }
+      >
+        <RegisterForm />
+      </Suspense>
     </div>
   )
 }

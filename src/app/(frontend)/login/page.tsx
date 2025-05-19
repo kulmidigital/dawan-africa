@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { useAuth } from '@/hooks/useAuth'
@@ -38,7 +38,15 @@ export default function LoginPage() {
           <p className="text-sm">Registration successful! Please sign in.</p>
         </div>
       )}
-      <LoginForm />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center flex-grow">
+            <div className="animate-pulse text-slate-500 text-sm">Loading form...</div>
+          </div>
+        }
+      >
+        <LoginForm />
+      </Suspense>
     </div>
   )
 }
