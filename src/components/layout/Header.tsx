@@ -368,7 +368,9 @@ const Header: React.FC = () => {
                       <Avatar className="h-6 w-6 mr-1.5 border border-slate-200">
                         <AvatarImage
                           src={
-                            user.profilePicture && typeof user.profilePicture === 'object'
+                            user.profilePicture &&
+                            typeof user.profilePicture === 'object' &&
+                            user.profilePicture.url
                               ? user.profilePicture.url
                               : undefined
                           }
@@ -630,7 +632,9 @@ const Header: React.FC = () => {
                       <Avatar className="h-6 w-6 mr-2 border border-slate-200">
                         <AvatarImage
                           src={
-                            user.profilePicture && typeof user.profilePicture === 'object'
+                            user.profilePicture &&
+                            typeof user.profilePicture === 'object' &&
+                            user.profilePicture.url
                               ? user.profilePicture.url
                               : undefined
                           }
