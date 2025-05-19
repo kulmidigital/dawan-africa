@@ -8,7 +8,7 @@ import type { Metadata, ResolvingMetadata } from 'next'
 import { getPostImageFromLayout, getPostExcerpt } from '@/utils/postUtils'
 
 interface PageProps {
-  params: { slug: string } // This is what params will be *after* await
+  params: Promise<{ slug: string }> 
 }
 
 // Function to fetch a single post by slug
@@ -65,10 +65,11 @@ async function getRelatedPosts(categoryIds: string[], currentPostId: string): Pr
 
 // Generate dynamic metadata
 export async function generateMetadata(
-  { params }: PageProps,
+  { params: paramsPromise }: PageProps,
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
-  const post = await getPostBySlug(params.slug)
+  const { slug } = await paramsPromise
+  const post = await getPostBySlug(slug)
 
   if (!post) {
     return {
