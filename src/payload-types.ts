@@ -123,6 +123,25 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
+  name?: string | null;
+  /**
+   * User's profile picture.
+   */
+  profilePicture?: (string | null) | Media;
+  roles?: ('admin' | 'editor' | 'user')[] | null;
+  subscriptionTier?: ('free' | 'premium') | null;
+  /**
+   * Has the user verified their email address?
+   */
+  isEmailVerified?: boolean | null;
+  /**
+   * Posts the user has favorited.
+   */
+  favoritedPosts?: (string | BlogPost)[] | null;
+  /**
+   * Posts the user has liked.
+   */
+  likedPosts?: (string | BlogPost)[] | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -220,6 +239,7 @@ export interface BlogPost {
           }
       )[]
     | null;
+  categories?: (string | BlogCategory)[] | null;
   author: string | User;
   updatedAt: string;
   createdAt: string;
@@ -304,6 +324,13 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  profilePicture?: T;
+  roles?: T;
+  subscriptionTier?: T;
+  isEmailVerified?: T;
+  favoritedPosts?: T;
+  likedPosts?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -374,6 +401,7 @@ export interface BlogPostsSelect<T extends boolean = true> {
               blockName?: T;
             };
       };
+  categories?: T;
   author?: T;
   updatedAt?: T;
   createdAt?: T;

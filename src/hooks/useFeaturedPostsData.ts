@@ -1,104 +1,109 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { BlogPost, BlogCategory } from '@/payload-types'
 import { subDays } from 'date-fns'
+import { useQuery } from '@tanstack/react-query'
 
 interface UseFeaturedPostsDataProps {
   excludePostIds?: string[]
 }
 
+// Define a fetcher function for SWR
+const fetcher = async (url: string) => {
+  const response = await fetch(url)
+  if (!response.ok) {
+    const errorDetails = await response.json().catch(() => ({}))
+    const error = new Error('An error occurred while fetching the data.')
+    // Attach more info to the error object
+    // @ts-ignore
+    error.info = errorDetails
+    // @ts-ignore
+    error.status = response.status
+    throw error
+  }
+  return response.json()
+}
+
 interface UseFeaturedPostsDataReturn {
   posts: BlogPost[]
-  categories: BlogCategory[] // Assuming BlogCategory is the correct type from payload-types
-  isLoading: boolean
+  categories: BlogCategory[]
+  isLoadingPosts: boolean
+  isLoadingCategories: boolean
+  postsError: any
+  categoriesError: any
 }
 
 export const useFeaturedPostsData = ({
   excludePostIds = [],
 }: UseFeaturedPostsDataProps): UseFeaturedPostsDataReturn => {
-  const [posts, setPosts] = useState<BlogPost[]>([])
-  const [categories, setCategories] = useState<BlogCategory[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  // Memoize excludePostIds to create a stable cache key part if it's an array of strings
+  const stableExcludePostIds = useMemo(() => excludePostIds.join(','), [excludePostIds])
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        // setIsLoading(true) is managed by the initial state and finally block
-        const thirtyDaysAgo = subDays(new Date(), 30).toISOString()
+  const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30).toISOString(), [])
 
-        const queryParams = new URLSearchParams({
-          limit: '50',
-          depth: '2',
-          sort: '-createdAt',
-          where: JSON.stringify({
-            and: [
-              {
-                createdAt: {
-                  greater_than: thirtyDaysAgo,
-                },
-              },
-            ],
-          }),
-        })
-
-        if (excludePostIds.length > 0) {
-          const whereQuery = JSON.parse(queryParams.get('where') || '{}')
-          if (whereQuery.and) {
-            // Ensure 'and' exists
-            whereQuery.and.push({
-              id: {
-                not_in: excludePostIds,
-              },
-            })
-          } else {
-            // Initialize 'and' if it doesn't
-            whereQuery.and = [
-              {
-                id: {
-                  not_in: excludePostIds,
-                },
-              },
-            ]
-          }
-          queryParams.set('where', JSON.stringify(whereQuery))
-        }
-
-        const response = await fetch(`/api/blogPosts?${queryParams.toString()}`)
-        if (!response.ok) throw new Error('Failed to fetch posts')
-
-        const data = await response.json()
-        if (data.docs && Array.isArray(data.docs)) {
-          setPosts(data.docs)
-        }
-      } catch (error) {
-        console.error('Error fetching posts:', error)
-        setPosts([]) // Set to empty array on error
-      }
-      // setIsLoading(false) will be handled in the combined finally block
+  const queryParamsObject = useMemo(() => {
+    const baseParams: Record<string, string> = {
+      limit: '50',
+      depth: '2',
+      sort: '-createdAt',
     }
-
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch('/api/blogCategories')
-        if (!response.ok) throw new Error('Failed to fetch categories')
-
-        const data = await response.json()
-        if (data.docs && Array.isArray(data.docs)) {
-          setCategories(data.docs)
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error)
-        setCategories([]) // Set to empty array on error
-      }
+    const whereClause: any = {
+      and: [
+        {
+          createdAt: {
+            greater_than: thirtyDaysAgo,
+          },
+        },
+      ],
     }
-
-    const fetchData = async () => {
-      setIsLoading(true)
-      await Promise.all([fetchPosts(), fetchCategories()])
-      setIsLoading(false)
+    if (stableExcludePostIds) {
+      whereClause.and.push({
+        id: {
+          not_in: stableExcludePostIds.split(',').filter((id) => id),
+        },
+      })
     }
+    baseParams.where = JSON.stringify(whereClause)
+    return baseParams
+  }, [thirtyDaysAgo, stableExcludePostIds])
 
-    fetchData()
-  }, [excludePostIds])
+  const postsQueryKey = ['blogPosts', 'featured', queryParamsObject]
 
-  return { posts, categories, isLoading }
+  const {
+    data: postsData,
+    error: postsError,
+    isLoading: isLoadingPosts,
+  } = useQuery<
+    {
+      docs: BlogPost[]
+    },
+    Error
+  >({
+    queryKey: postsQueryKey,
+    queryFn: () => fetcher(`/api/blogPosts?${new URLSearchParams(queryParamsObject).toString()}`),
+  })
+
+  // Fetch categories using useQuery
+  const categoriesQueryKey = ['blogCategories', 'all']
+  const {
+    data: categoriesData,
+    error: categoriesError,
+    isLoading: isLoadingCategories,
+  } = useQuery<
+    {
+      docs: BlogCategory[]
+    },
+    Error
+  >({
+    queryKey: categoriesQueryKey,
+    queryFn: () => fetcher('/api/blogCategories'),
+  })
+
+  return {
+    posts: postsData?.docs || [],
+    categories: categoriesData?.docs || [],
+    isLoadingPosts,
+    isLoadingCategories,
+    postsError,
+    categoriesError,
+  }
 }

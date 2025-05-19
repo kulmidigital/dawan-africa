@@ -15,23 +15,27 @@ import {
   CloudSnow,
   Facebook,
   Instagram,
+  LogOut,
   MapPin,
   Menu,
   Search,
   Sun,
   Twitter,
   User,
+  UserPlus,
   Wind,
   X,
 } from 'lucide-react'
 
-import { BlogCategory } from '@/payload-types'
+import { BlogCategory, User as PayloadUser } from '@/payload-types'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import FootballSheet from '@/components/football/FootballSheet'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { useAuth } from '@/hooks/useAuth'
 
 interface WeatherData {
   temperature: number
@@ -47,7 +51,24 @@ interface Coordinates {
   longitude: number
 }
 
+// Helper to get initials from name or email
+const getInitials = (name?: string | null, email?: string | null): string => {
+  if (name) {
+    const parts = name.split(' ')
+    if (parts.length > 1) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+    }
+    return name.substring(0, 2).toUpperCase()
+  }
+  if (email) {
+    return email.substring(0, 2).toUpperCase()
+  }
+  return 'U' // Default fallback
+}
+
 const Header: React.FC = () => {
+  const { user, isLoading: authLoading, logout: authLogout } = useAuth()
+
   const [categories, setCategories] = useState<BlogCategory[]>([])
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -334,14 +355,64 @@ const Header: React.FC = () => {
                 )}
               </div>
 
-              {/* Account */}
-              <Link
-                href="/account"
-                className="flex items-center text-xs text-gray-500 hover:text-[#2aaac6] transition-colors"
-              >
-                <User size={16} className="mr-1" />
-                <span className="hidden sm:inline">Account</span>
-              </Link>
+              {/* Account/Login/Register Links */}
+              {authLoading ? (
+                <Skeleton className="h-5 w-20" />
+              ) : user ? (
+                <div className="flex items-center space-x-2">
+                  <Link
+                    href="/account"
+                    className="flex items-center text-xs text-gray-500 hover:text-[#2aaac6] transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <Avatar className="h-6 w-6 mr-1.5 border border-slate-200">
+                        <AvatarImage
+                          src={
+                            user.profilePicture && typeof user.profilePicture === 'object'
+                              ? user.profilePicture.url
+                              : undefined
+                          }
+                          alt={user.name ?? 'User'}
+                        />
+                        <AvatarFallback className="text-[10px] font-medium bg-slate-100 text-slate-500">
+                          {getInitials(user.name, user.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden sm:inline max-w-[100px] truncate">
+                        {user.name || user.email?.split('@')[0]}
+                      </span>
+                    </div>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={async () => {
+                      await authLogout()
+                    }}
+                    className="text-gray-600 hover:text-red-500 -mr-2"
+                    aria-label="Logout"
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="flex items-center text-xs text-gray-500 hover:text-[#2aaac6] transition-colors"
+                  >
+                    <User size={16} className="mr-1" />
+                    <span className="hidden sm:inline">Login</span>
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="hidden sm:flex items-center text-xs text-gray-500 hover:text-[#2aaac6] transition-colors"
+                  >
+                    <UserPlus size={16} className="mr-1" />
+                    <span className="hidden sm:inline">Register</span>
+                  </Link>
+                </>
+              )}
 
               {/* Mobile search button */}
               <div className="lg:hidden">
@@ -545,7 +616,66 @@ const Header: React.FC = () => {
                 </button>
               </FootballSheet>
 
-              <div className="pt-2 pb-1">
+              {/* Auth links in mobile menu */}
+              <div className="pt-2 pb-1 border-t mt-2">
+                {authLoading ? (
+                  <Skeleton className="h-10 w-full rounded-md mt-1" />
+                ) : user ? (
+                  <>
+                    <Link
+                      href="/account"
+                      className="flex items-center px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6]"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Avatar className="h-6 w-6 mr-2 border border-slate-200">
+                        <AvatarImage
+                          src={
+                            user.profilePicture && typeof user.profilePicture === 'object'
+                              ? user.profilePicture.url
+                              : undefined
+                          }
+                          alt={user.name ?? 'User'}
+                        />
+                        <AvatarFallback className="text-[10px] font-medium bg-slate-100 text-slate-500">
+                          {getInitials(user.name, user.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate max-w-[200px]">
+                        {user.name || user.email?.split('@')[0]}
+                      </span>
+                    </Link>
+                    <button
+                      className="text-left flex w-full px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                      onClick={async () => {
+                        await authLogout()
+                        setIsMenuOpen(false)
+                      }}
+                    >
+                      <LogOut className="h-5 w-5 mr-2" />
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6]"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6]"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Register
+                    </Link>
+                  </>
+                )}
+              </div>
+
+              <div className="pt-2 pb-1 border-t mt-2">
                 <Badge
                   variant="outline"
                   className="text-xs font-normal text-gray-500 bg-transparent"

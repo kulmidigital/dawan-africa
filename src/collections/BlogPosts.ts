@@ -32,6 +32,16 @@ export const BlogPost: CollectionConfig = {
       blocks: [RichText, Cover, Image, RecentBlogPosts],
     },
     {
+      name: 'categories',
+      type: 'relationship',
+      relationTo: 'blogCategories',
+      hasMany: true,
+      label: 'Categories',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'author',
       type: 'relationship',
       relationTo: 'users',

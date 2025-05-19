@@ -16,6 +16,7 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start"
   },
   "dependencies": {
+    "@google-cloud/text-to-speech": "^6.1.0",
     "@hookform/resolvers": "^5.0.1",
     "@lexical/headless": "^0.28.0",
     "@lexical/html": "^0.28.0",
@@ -51,6 +52,8 @@
     "@radix-ui/react-toggle-group": "^1.1.9",
     "@radix-ui/react-tooltip": "^1.2.6",
     "@tailwindcss/postcss": "^4.1.6",
+    "@tanstack/react-query": "^5.76.1",
+    "@tanstack/react-query-devtools": "^5.76.1",
     "@wordpress/block-serialization-default-parser": "^5.22.0",
     "cheerio": "^1.0.0",
     "class-variance-authority": "^0.7.1",
@@ -84,6 +87,7 @@
     "sharp": "0.32.6",
     "slugify": "^1.6.6",
     "sonner": "^2.0.3",
+    "swr": "^2.3.3",
     "tailwind-merge": "^3.2.0",
     "tailwindcss": "^4.1.6",
     "vaul": "^1.1.2",

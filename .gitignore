@@ -43,3 +43,9 @@ next-env.d.ts
 /media
 
 .vercel
+
+output.wav
+output.mp3
+
+google-credentials.json
+update-admin-users.js

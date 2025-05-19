@@ -12,8 +12,6 @@ import { Users } from './collections/Users.ts'
 import { Media } from './collections/Media.ts'
 import { BlogPost } from './collections/BlogPosts.ts'
 import { BlogCategories } from './collections/BlogCategories.ts'
-import Logo from './admin/components/Logo.tsx'
-import Icon from './admin/components/Icon.tsx'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -26,9 +24,12 @@ export default buildConfig({
     },
     components: {
       graphics: {
-        Logo,
-        Icon,
+        Logo: './admin/components/Logo.tsx',
+        Icon: './admin/components/Icon.tsx',
       },
+    },
+    importMap: {
+      baseDir: path.resolve(dirname),
     },
   },
   collections: [Users, Media, BlogPost, BlogCategories],

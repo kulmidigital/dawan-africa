@@ -23,14 +23,15 @@ interface FeaturedPostsProps {
 
 export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [] }) => {
   const [activeTab, setActiveTab] = useState('latest')
-  const { posts, isLoading } = useFeaturedPostsData({ excludePostIds })
+  const { posts, isLoadingPosts, postsError, categories, isLoadingCategories, categoriesError } =
+    useFeaturedPostsData({ excludePostIds })
 
   const topPostsData = posts.slice(0, 3)
   const mainFeaturedPostData = posts[3] || null
   const gridPostsData = posts.slice(4, 10)
   const listPostsData = posts.slice(10)
 
-  if (isLoading) {
+  if (isLoadingPosts || isLoadingCategories) {
     return (
       <div className="container mx-auto px-4 py-6 sm:py-10">
         <div className="space-y-6 sm:space-y-8">
@@ -45,6 +46,22 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [
           </div>
           <Skeleton className="h-64 sm:h-96 rounded-xl" />
         </div>
+      </div>
+    )
+  }
+
+  if (postsError || categoriesError) {
+    return (
+      <div className="container mx-auto px-4 py-6 sm:py-10">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-red-500">
+              {postsError ? 'Error loading posts. ' : ''}
+              {categoriesError ? 'Error loading categories. ' : ''}
+              Please try again later.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     )
   }

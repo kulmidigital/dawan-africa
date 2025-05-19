@@ -1,11 +1,14 @@
 import React from 'react'
+import Image from 'next/image'
 
 const Icon = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px' }}>
-    <img
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <Image
       src="/dark-mode-logo.png"
-      alt="Company Icon"
-      style={{ maxHeight: '80px' }} 
+      alt="Dawana Africa Logo"
+      width={200}
+      height={80}
+      style={{ padding: '10px 0' }}
     />
   </div>
 )
