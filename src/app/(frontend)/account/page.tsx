@@ -54,6 +54,12 @@ function AccountPageClientBoundary() {
     setUser(updatedUser)
   }
 
+  const tabContentFallback = (
+    <div className="pt-4">
+      <Skeleton className="h-64 w-full rounded-md" />
+    </div>
+  )
+
   if (loading) {
     return (
       <div className="bg-white min-h-screen py-6">
@@ -126,15 +132,21 @@ function AccountPageClientBoundary() {
             </TabsList>
 
             <TabsContent value="profile" className="mt-0">
-              <UserProfile user={user} onUpdate={handleUserUpdate} />
+              <Suspense fallback={tabContentFallback}>
+                <UserProfile user={user} onUpdate={handleUserUpdate} />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value="posts" className="mt-0">
-              <UserPosts user={user} />
+              <Suspense fallback={tabContentFallback}>
+                <UserPosts user={user} />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value="settings" className="mt-0">
-              <UserSettings user={user} />
+              <Suspense fallback={tabContentFallback}>
+                <UserSettings user={user} />
+              </Suspense>
             </TabsContent>
           </Tabs>
         </div>
