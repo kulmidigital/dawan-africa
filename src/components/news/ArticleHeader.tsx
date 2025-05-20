@@ -1,24 +1,21 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { BlogPost } from '@/payload-types'
 import { format } from 'date-fns'
-import { CalendarDays, Clock, Share2, UserCircle, Loader2 } from 'lucide-react'
+import { CalendarDays, Clock, UserCircle } from 'lucide-react'
 
 // Import utility functions
 import { getAuthorDisplayName, getPostImageFromLayout } from '@/utils/postUtils'
+import { SharePopover } from './SharePopover'
 
 interface ArticleHeaderProps {
   post: BlogPost
 }
 
 export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
-  const [isSharing, setIsSharing] = useState(false)
-  const [shareResult, setShareResult] = useState<{
-    message: string
-    type: 'success' | 'error'
-  } | null>(null)
+  const [currentUrl, setCurrentUrl] = useState<string>('')
 
   const authorName = getAuthorDisplayName(post.author)
   const publishedDate = format(new Date(post.createdAt), 'MMMM d, yyyy')
@@ -46,33 +43,12 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
 
   const coverImageUrl = getPostImageFromLayout(post.layout)
 
-  const handleShare = async () => {
-    setIsSharing(true)
-    setShareResult(null)
-
-    try {
-      if (navigator.share) {
-        // Web Share API is supported
-        await navigator.share({
-          title: post.name,
-          text: `Check out this article: ${post.name}`,
-          url: window.location.href,
-        })
-        setShareResult({ message: 'Shared successfully!', type: 'success' })
-      } else {
-        // Fallback to clipboard
-        await navigator.clipboard.writeText(window.location.href)
-        setShareResult({ message: 'Link copied to clipboard!', type: 'success' })
-      }
-    } catch (error) {
-      console.error('Error sharing content:', error)
-      setShareResult({ message: 'Failed to share', type: 'error' })
-    } finally {
-      setIsSharing(false)
-      // Clear message after 3 seconds
-      setTimeout(() => setShareResult(null), 3000)
+  // Set the URL after component mounts on client
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentUrl(window.location.href)
     }
-  }
+  }, [])
 
   return (
     <header>
@@ -130,24 +106,13 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
 
       {/* Floating share button - shown on all screen sizes */}
       <div className="fixed right-4 sm:right-8 top-24 sm:top-32 z-50">
-        <button
-          className="bg-white p-2 sm:p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group disabled:opacity-50"
-          onClick={handleShare}
-          disabled={isSharing}
-        >
-          {isSharing ? (
-            <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-[#2aaac6] animate-spin" />
-          ) : (
-            <Share2 className="h-4 w-4 sm:h-5 sm:w-5 text-[#2aaac6] group-hover:scale-110 transition-transform" />
-          )}
-        </button>
-        {shareResult && (
-          <div className="absolute top-full mt-2 right-0 bg-white p-2 rounded-md shadow-md text-xs sm:text-sm whitespace-nowrap">
-            <span className={shareResult.type === 'success' ? 'text-green-600' : 'text-red-600'}>
-              {shareResult.message}
-            </span>
-          </div>
-        )}
+        <SharePopover
+          title={post.name}
+          url={currentUrl}
+          buttonVariant="outline"
+          buttonSize="icon"
+          className="w-10 h-10 bg-white hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-300"
+        />
       </div>
     </header>
   )

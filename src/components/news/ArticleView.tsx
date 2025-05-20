@@ -4,12 +4,13 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { BlogPost as PayloadBlogPost, User as PayloadUser } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
 import { ArticleHeader } from './ArticleHeader'
-import { Bookmark, ThumbsUp, Loader2, Share2 } from 'lucide-react'
+import { Bookmark, ThumbsUp, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { RelatedArticles } from './RelatedArticles'
 import { updateUserAndPostEngagement } from '@/utils/engagementApi'
 import { getRelatedPostsForView } from '@/utils/relatedPostsApi'
+import { SharePopover } from './SharePopover'
 
 // Use the original types from payload-types
 type BlogPost = PayloadBlogPost
@@ -39,11 +40,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>(initialRelatedPosts || [])
   const [isLoadingRelated, setIsLoadingRelated] = useState(!initialRelatedPosts)
 
-  const [isSharing, setIsSharing] = useState(false)
-  const [shareResult, setShareResult] = useState<{
-    message: string
-    type: 'success' | 'error'
-  } | null>(null)
+  const [currentUrl, setCurrentUrl] = useState<string>('')
 
   const fetchCurrentUser = useCallback(async () => {
     setIsLoadingUser(true)
@@ -115,6 +112,13 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
       setIsLiked(false)
     }
   }, [currentUser, post.id])
+
+  // Set the URL after component mounts on client
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentUrl(window.location.href)
+    }
+  }, [])
 
   if (!post) return <div>Article not found.</div>
 
@@ -220,34 +224,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
     setIsUpdatingLike(false)
   }
 
-  const handleShare = async () => {
-    setIsSharing(true)
-    setShareResult(null)
-
-    try {
-      if (navigator.share) {
-        // Web Share API is supported
-        await navigator.share({
-          title: post.name,
-          text: `Check out this article: ${post.name}`,
-          url: window.location.href,
-        })
-        setShareResult({ message: 'Shared successfully!', type: 'success' })
-      } else {
-        // Fallback to clipboard
-        await navigator.clipboard.writeText(window.location.href)
-        setShareResult({ message: 'Link copied to clipboard!', type: 'success' })
-      }
-    } catch (error) {
-      console.error('Error sharing content:', error)
-      setShareResult({ message: 'Failed to share', type: 'error' })
-    } finally {
-      setIsSharing(false)
-      // Clear message after 3 seconds
-      setTimeout(() => setShareResult(null), 3000)
-    }
-  }
-
   const firstBlockIsCover = !!(
     post.layout &&
     post.layout.length > 0 &&
@@ -331,25 +307,17 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                       {isFavorited ? 'Saved' : 'Save'} ({currentFavoriteCount})
                     </span>
                   </button>
-                  <button
-                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white rounded-full shadow-sm hover:shadow transition-all border border-gray-200 disabled:opacity-50"
-                    onClick={handleShare}
-                    disabled={isSharing}
-                  >
-                    {isSharing ? (
-                      <Loader2 className="h-4 w-4 text-[#2aaac6] animate-spin" />
-                    ) : (
-                      <Share2 className="h-4 w-4 text-[#2aaac6]" />
-                    )}
-                    <span className="text-sm font-medium">Share</span>
-                  </button>
-                  {shareResult && (
-                    <span
-                      className={`text-xs ${shareResult.type === 'success' ? 'text-green-600' : 'text-red-600'}`}
-                    >
-                      {shareResult.message}
-                    </span>
-                  )}
+
+                  <div className="flex items-center">
+                    <SharePopover
+                      title={post.name}
+                      url={currentUrl}
+                      buttonVariant="outline"
+                      buttonSize="default"
+                      showLabel={true}
+                      className="bg-white hover:bg-gray-50 shadow-sm hover:shadow transition-all border border-gray-200"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -1,4 +1,4 @@
-import { BlogPost, BlogCategory } from '@/payload-types' // Assuming your payload types are here
+import { BlogPost, BlogCategory } from '@/payload-types'
 
 interface GetRelatedPostsParams {
   currentPostId: string
@@ -13,14 +13,13 @@ interface GetRelatedPostsParams {
 export const getRelatedPostsForView = async ({
   currentPostId,
   currentPostCategories,
-  limit = 6, // Default to 6 related posts
+  limit = 6,
 }: GetRelatedPostsParams): Promise<BlogPost[]> => {
   try {
     const queryParams = new URLSearchParams()
     queryParams.append('where[id][not_equals]', currentPostId)
-    // Fetch a slightly larger number to allow for better randomization and filtering
     queryParams.append('limit', String(limit * 3 > 20 ? limit * 3 : 20))
-    queryParams.append('depth', '1') // Ensure categories are populated for filtering, adjust if needed
+    queryParams.append('depth', '1')
 
     const response = await fetch(`/api/blogPosts?${queryParams.toString()}`)
 
@@ -35,7 +34,7 @@ export const getRelatedPostsForView = async ({
       return []
     }
 
-    let allFetchedPosts: BlogPost[] = data.docs
+    const allFetchedPosts: BlogPost[] = data.docs
     let categoryMatches: BlogPost[] = []
 
     if (
@@ -73,7 +72,7 @@ export const getRelatedPostsForView = async ({
     }
 
     // If not enough category matches, get other posts (excluding those already in categoryMatches)
-    let otherPosts = allFetchedPosts.filter(
+    const otherPosts = allFetchedPosts.filter(
       (p) => !categoryMatches.some((match) => match.id === p.id) && p.id !== currentPostId,
     )
 
@@ -85,12 +84,6 @@ export const getRelatedPostsForView = async ({
 
     const neededFromOthers = limit - categoryMatches.length
     const combinedPosts = [...categoryMatches, ...otherPosts.slice(0, neededFromOthers)]
-
-    // Final shuffle of the combined list for good measure if desired, though often the above is sufficient
-    // for (let i = combinedPosts.length - 1; i > 0; i--) {
-    //   const j = Math.floor(Math.random() * (i + 1));
-    //   [combinedPosts[i], combinedPosts[j]] = [combinedPosts[j], combinedPosts[i]];
-    // }
 
     return combinedPosts.slice(0, limit)
   } catch (error) {
