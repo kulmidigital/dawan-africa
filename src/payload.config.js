@@ -24,8 +24,8 @@ export default buildConfig({
     },
     components: {
       graphics: {
-        Logo: './admin/components/Logo.tsx',
-        Icon: './admin/components/Icon.tsx',
+        Logo: './components/admin/Logo.tsx',
+        Icon: './components/admin/Icon.tsx',
       },
     },
     importMap: {

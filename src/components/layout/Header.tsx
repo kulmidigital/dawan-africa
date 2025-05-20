@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import {
+  Bitcoin,
   Calendar,
   Cloud,
   CloudDrizzle,
@@ -509,6 +510,19 @@ const Header: React.FC = () => {
                     <Link href="/news">All News</Link>
                   </Button>
 
+                  <Button
+                    variant="ghost"
+                    asChild
+                    className="text-gray-700 hover:text-[#2aaac6] hover:bg-transparent rounded-md"
+                  >
+                    <Link href="/markets">
+                      <span className="flex items-center">
+                        <Bitcoin className="w-4 h-4 mr-1" />
+                        Markets
+                      </span>
+                    </Link>
+                  </Button>
+
                   {/* Countries dropdown using DropdownMenu component */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -660,18 +674,20 @@ const Header: React.FC = () => {
             {/* Navigation Links */}
             <nav className="flex flex-col space-y-2">
               <Link
-                href="/"
-                className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6]"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
                 href="/news"
                 className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6]"
                 onClick={() => setIsMenuOpen(false)}
               >
                 All News
+              </Link>
+
+              <Link
+                href="/markets"
+                className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6] flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Bitcoin className="h-4 w-4 mr-2" />
+                Markets
               </Link>
 
               {/* Add Football button in mobile navigation */}

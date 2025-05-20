@@ -15,11 +15,18 @@ export const QueryProvider: React.FC<QueryProviderProps> = ({ children }) => {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // Default staleTime can be set here, e.g., 5 minutes
-            staleTime: 5 * 60 * 1000,
-            // Default refetchOnWindowFocus can also be set globally
+            // Set a default staleTime of 1 minute
+            staleTime: 60 * 1000,
+
+            // Set a default cache time of 5 minutes
+            gcTime: 5 * 60 * 1000,
+
+            // Only refetch on mount by default, not on window focus
             refetchOnWindowFocus: false,
-            refetchOnReconnect: false,
+
+            // Auto retry failed requests
+            retry: 2,
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
           },
         },
       }),
