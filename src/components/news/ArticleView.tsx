@@ -1,13 +1,15 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { BlogPost as PayloadBlogPost, User as PayloadUser, BlogCategory } from '@/payload-types'
+import { BlogPost as PayloadBlogPost, User as PayloadUser } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
 import { ArticleHeader } from './ArticleHeader'
-import { Bookmark, ThumbsUp, Loader2 } from 'lucide-react'
+import { Bookmark, ThumbsUp, Loader2, Share2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { RelatedArticles } from './RelatedArticles'
+import { updateUserAndPostEngagement } from '@/utils/engagementApi'
+import { getRelatedPostsForView } from '@/utils/relatedPostsApi'
 
 // Use the original types from payload-types
 type BlogPost = PayloadBlogPost
@@ -20,15 +22,28 @@ interface ArticleViewProps {
 
 export const ArticleView: React.FC<ArticleViewProps> = ({
   post,
-  relatedPosts: propRelatedPosts,
+  relatedPosts: initialRelatedPosts,
 }) => {
   const router = useRouter()
   const [currentUser, setCurrentUser] = useState<User | null>(null)
-  const [isFavorited, setIsFavorited] = useState(false)
   const [isLoadingUser, setIsLoadingUser] = useState(true)
+
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [currentFavoriteCount, setCurrentFavoriteCount] = useState(0) // Initialize with 0, then set by useEffect
   const [isUpdatingFavorite, setIsUpdatingFavorite] = useState(false)
-  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>(propRelatedPosts || [])
-  const [isLoadingRelated, setIsLoadingRelated] = useState(!propRelatedPosts)
+
+  const [isLiked, setIsLiked] = useState(false)
+  const [currentLikeCount, setCurrentLikeCount] = useState(0) // Initialize with 0, then set by useEffect
+  const [isUpdatingLike, setIsUpdatingLike] = useState(false)
+
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>(initialRelatedPosts || [])
+  const [isLoadingRelated, setIsLoadingRelated] = useState(!initialRelatedPosts)
+
+  const [isSharing, setIsSharing] = useState(false)
+  const [shareResult, setShareResult] = useState<{
+    message: string
+    type: 'success' | 'error'
+  } | null>(null)
 
   const fetchCurrentUser = useCallback(async () => {
     setIsLoadingUser(true)
@@ -53,106 +68,53 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
   }, [])
 
   const fetchRelatedPosts = useCallback(async () => {
-    if (propRelatedPosts?.length) return // Don't fetch if already provided as props
-
+    if (initialRelatedPosts && initialRelatedPosts.length > 0) {
+      return
+    }
     setIsLoadingRelated(true)
     try {
-      // Create a query to fetch all posts except current one
-      const queryParams = new URLSearchParams()
-
-      // Exclude current post
-      queryParams.append('where[id][not_equals]', post.id)
-
-      // Increase limit to get more posts that we'll randomize from
-      queryParams.append('limit', '20')
-
-      const response = await fetch(`/api/blogPosts?${queryParams.toString()}`)
-
-      if (response.ok) {
-        const data = await response.json()
-        if (data.docs && data.docs.length > 0) {
-          // First try to filter posts that share categories with the current post
-          let categoryMatches: BlogPost[] = []
-
-          if (post.categories && Array.isArray(post.categories) && post.categories.length > 0) {
-            const currentPostCategoryIds = post.categories.map((cat) =>
-              typeof cat === 'string' ? cat : cat.id,
-            )
-
-            // Find posts that share at least one category
-            categoryMatches = data.docs.filter((otherPost: BlogPost) => {
-              if (!otherPost.categories || !Array.isArray(otherPost.categories)) return false
-
-              const otherPostCategoryIds = otherPost.categories.map((cat) =>
-                typeof cat === 'string' ? cat : cat.id,
-              )
-
-              // Check if any category matches
-              return otherPostCategoryIds.some((catId) => currentPostCategoryIds.includes(catId))
-            })
-          }
-
-          // If we have enough category matches, use those
-          if (categoryMatches.length >= 6) {
-            // Truly randomize the array (Fisher-Yates shuffle)
-            for (let i = categoryMatches.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1))
-              ;[categoryMatches[i], categoryMatches[j]] = [categoryMatches[j], categoryMatches[i]]
-            }
-
-            setRelatedPosts(categoryMatches.slice(0, 6))
-          } else {
-            // If not enough category matches, use a mix of category matches and random posts
-            const otherPosts = data.docs.filter(
-              (p: BlogPost) => !categoryMatches.some((match) => match.id === p.id),
-            )
-
-            // Shuffle both arrays
-            for (let i = otherPosts.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1))
-              ;[otherPosts[i], otherPosts[j]] = [otherPosts[j], otherPosts[i]]
-            }
-
-            // Combine category matches with random posts to get 6 total
-            const combinedPosts = [
-              ...categoryMatches,
-              ...otherPosts.slice(0, 6 - categoryMatches.length),
-            ]
-
-            // Additional shuffle for good measure
-            for (let i = combinedPosts.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1))
-              ;[combinedPosts[i], combinedPosts[j]] = [combinedPosts[j], combinedPosts[i]]
-            }
-
-            setRelatedPosts(combinedPosts.slice(0, 6))
-          }
-        }
-      }
+      const fetchedPosts = await getRelatedPostsForView({
+        currentPostId: post.id,
+        currentPostCategories: post.categories,
+      })
+      setRelatedPosts(fetchedPosts)
     } catch (error) {
-      console.error('Error fetching related posts:', error)
+      console.error('Error setting related posts in component:', error)
+      setRelatedPosts([])
     } finally {
       setIsLoadingRelated(false)
     }
-  }, [post.id, post.categories, propRelatedPosts])
+  }, [post.id, post.categories, initialRelatedPosts])
 
   useEffect(() => {
     fetchCurrentUser()
   }, [fetchCurrentUser])
 
   useEffect(() => {
-    fetchRelatedPosts()
-  }, [fetchRelatedPosts])
+    if (!initialRelatedPosts || initialRelatedPosts.length === 0) {
+      fetchRelatedPosts()
+    }
+  }, [fetchRelatedPosts, initialRelatedPosts])
+
+  useEffect(() => {
+    setCurrentLikeCount(post.likes || 0)
+    setCurrentFavoriteCount(post.favoritesCount || 0)
+  }, [post.id, post.likes, post.favoritesCount])
 
   useEffect(() => {
     if (currentUser && post) {
       const favoritedPostIds =
         currentUser.favoritedPosts?.map((p) => (typeof p === 'string' ? p : p.id)) || []
       setIsFavorited(favoritedPostIds.includes(post.id))
+
+      const likedPostIds =
+        currentUser.likedPosts?.map((p) => (typeof p === 'string' ? p : p.id)) || []
+      setIsLiked(likedPostIds.includes(post.id))
     } else {
-      setIsFavorited(false) // Not logged in or post not loaded, so not favorited
+      setIsFavorited(false)
+      setIsLiked(false)
     }
-  }, [currentUser, post])
+  }, [currentUser, post.id])
 
   if (!post) return <div>Article not found.</div>
 
@@ -165,47 +127,124 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
 
     setIsUpdatingFavorite(true)
     const currentlyFavorited = isFavorited
-    setIsFavorited(!currentlyFavorited) // Optimistic update
+    const newFavoritedState = !currentlyFavorited
+    setCurrentFavoriteCount((prevCount) => (newFavoritedState ? prevCount + 1 : prevCount - 1))
+    setIsFavorited(newFavoritedState)
 
     const originalFavoritedPosts =
       currentUser.favoritedPosts?.map((p) => (typeof p === 'string' ? p : p.id)) || []
     let updatedFavoritedPosts: string[]
 
     if (currentlyFavorited) {
-      // Unfavorite: remove post.id
       updatedFavoritedPosts = originalFavoritedPosts.filter((id) => id !== post.id)
     } else {
-      // Favorite: add post.id
       updatedFavoritedPosts = [...originalFavoritedPosts, post.id]
     }
 
-    try {
-      const response = await fetch(`/api/users/${currentUser.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          // Ensure you have a way to authenticate this request, e.g., cookies, Authorization header
-        },
-        body: JSON.stringify({ favoritedPosts: updatedFavoritedPosts }),
-      })
+    const { userUpdateOk, postUpdateOk } = await updateUserAndPostEngagement({
+      userId: currentUser.id,
+      postId: post.id,
+      userEngagementField: 'favoritedPosts',
+      updatedUserEngagementArray: updatedFavoritedPosts,
+      postCountField: 'favoritesCount',
+      newPostCount: newFavoritedState ? currentFavoriteCount + 1 : currentFavoriteCount - 1,
+    })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error('Failed to update favorites:', errorData)
-        setIsFavorited(currentlyFavorited) // Revert optimistic update
-        // Optionally, show an error message to the user
-      } else {
-        // Update current user state if needed, or refetch
+    if (userUpdateOk) {
+      setCurrentUser((prevUser) =>
+        prevUser ? { ...prevUser, favoritedPosts: updatedFavoritedPosts as any } : null,
+      )
+    }
+
+    if (!userUpdateOk || !postUpdateOk) {
+      console.error('Favorite toggle failed, rolling back UI.')
+      setIsFavorited(currentlyFavorited)
+      setCurrentFavoriteCount((prevCount) => (newFavoritedState ? prevCount - 1 : prevCount + 1))
+      if (userUpdateOk && !postUpdateOk) {
         setCurrentUser((prevUser) =>
-          prevUser ? { ...prevUser, favoritedPosts: updatedFavoritedPosts } : null,
+          prevUser ? { ...prevUser, favoritedPosts: originalFavoritedPosts as any } : null,
         )
       }
+    }
+    setIsUpdatingFavorite(false)
+  }
+
+  const handleToggleLike = async () => {
+    if (!currentUser) {
+      router.push('/login?redirect_to=' + encodeURIComponent(window.location.pathname))
+      return
+    }
+    if (isUpdatingLike) return
+
+    setIsUpdatingLike(true)
+    const currentlyLiked = isLiked
+    const newLikedState = !currentlyLiked
+    setCurrentLikeCount((prevCount) => (newLikedState ? prevCount + 1 : prevCount - 1))
+    setIsLiked(newLikedState)
+
+    const originalLikedPosts =
+      currentUser.likedPosts?.map((p) => (typeof p === 'string' ? p : p.id)) || []
+    let updatedLikedPosts: string[]
+
+    if (currentlyLiked) {
+      updatedLikedPosts = originalLikedPosts.filter((id) => id !== post.id)
+    } else {
+      updatedLikedPosts = [...originalLikedPosts, post.id]
+    }
+
+    const { userUpdateOk, postUpdateOk } = await updateUserAndPostEngagement({
+      userId: currentUser.id,
+      postId: post.id,
+      userEngagementField: 'likedPosts',
+      updatedUserEngagementArray: updatedLikedPosts,
+      postCountField: 'likes',
+      newPostCount: newLikedState ? currentLikeCount + 1 : currentLikeCount - 1,
+    })
+
+    if (userUpdateOk) {
+      setCurrentUser((prevUser) =>
+        prevUser ? { ...prevUser, likedPosts: updatedLikedPosts as any } : null,
+      )
+    }
+
+    if (!userUpdateOk || !postUpdateOk) {
+      console.error('Like toggle failed, rolling back UI.')
+      setIsLiked(currentlyLiked)
+      setCurrentLikeCount((prevCount) => (newLikedState ? prevCount - 1 : prevCount + 1))
+      if (userUpdateOk && !postUpdateOk) {
+        setCurrentUser((prevUser) =>
+          prevUser ? { ...prevUser, likedPosts: originalLikedPosts as any } : null,
+        )
+      }
+    }
+    setIsUpdatingLike(false)
+  }
+
+  const handleShare = async () => {
+    setIsSharing(true)
+    setShareResult(null)
+
+    try {
+      if (navigator.share) {
+        // Web Share API is supported
+        await navigator.share({
+          title: post.name,
+          text: `Check out this article: ${post.name}`,
+          url: window.location.href,
+        })
+        setShareResult({ message: 'Shared successfully!', type: 'success' })
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(window.location.href)
+        setShareResult({ message: 'Link copied to clipboard!', type: 'success' })
+      }
     } catch (error) {
-      console.error('Error updating favorites:', error)
-      setIsFavorited(currentlyFavorited) // Revert optimistic update
-      // Optionally, show an error message to the user
+      console.error('Error sharing content:', error)
+      setShareResult({ message: 'Failed to share', type: 'error' })
     } finally {
-      setIsUpdatingFavorite(false)
+      setIsSharing(false)
+      // Clear message after 3 seconds
+      setTimeout(() => setShareResult(null), 3000)
     }
   }
 
@@ -222,8 +261,8 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
 
       <article className="relative">
         {/* Article Content Container */}
-        <div className="container mx-auto px-4 sm:px-6 md:px-8 relative">
-          <div className="max-w-3xl mx-auto bg-white rounded-t-2xl -mt-6 sm:-mt-10 pt-10 pb-16 px-5 sm:px-8 md:px-12 shadow-sm relative z-10 article-content">
+        <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 relative">
+          <div className="max-w-3xl mx-auto bg-white rounded-t-2xl -mt-2 sm:-mt-10 pt-6 sm:pt-10 pb-8 sm:pb-16 px-4 sm:px-8 md:px-12 shadow-sm relative z-10 article-content">
             {/* Main Content - Render Blocks */}
             {post.layout && post.layout.length > 0 ? (
               post.layout.map((block, i) => {
@@ -254,22 +293,30 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
         </div>
 
         {/* Article Engagement & Navigation */}
-        <div className="bg-gray-50 py-8 sm:py-12 mt-8 border-t border-gray-100">
+        <div className="bg-gray-50 py-6 sm:py-8 md:py-12 mt-6 sm:mt-8 border-t border-gray-100">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
               {/* Engagement Section */}
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                  <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm hover:shadow transition-all border border-gray-200">
-                    <ThumbsUp className="h-4 w-4 text-[#2aaac6]" />
-                    <span className="text-sm font-medium">Like</span>
-                  </button>
-                  {/* <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm hover:shadow transition-all border border-gray-200">
-                    <MessageCircle className="h-4 w-4 text-[#2aaac6]" />
-                    <span className="text-sm font-medium">Comment</span>
-                  </button> */}
+              <div className="flex flex-wrap items-center justify-between gap-y-4 mb-6 sm:mb-8">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                   <button
-                    className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm hover:shadow transition-all border border-gray-200 disabled:opacity-50"
+                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white rounded-full shadow-sm hover:shadow transition-all border border-gray-200 disabled:opacity-50"
+                    onClick={handleToggleLike}
+                    disabled={isUpdatingLike || isLoadingUser}
+                  >
+                    {isUpdatingLike ? (
+                      <Loader2 className="h-4 w-4 text-[#2aaac6] animate-spin" />
+                    ) : (
+                      <ThumbsUp
+                        className={`h-4 w-4 ${isLiked ? 'text-blue-500 fill-blue-500' : 'text-[#2aaac6]'}`}
+                      />
+                    )}
+                    <span className="text-sm font-medium">
+                      {isLiked ? 'Liked' : 'Like'} ({currentLikeCount})
+                    </span>
+                  </button>
+                  <button
+                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white rounded-full shadow-sm hover:shadow transition-all border border-gray-200 disabled:opacity-50"
                     onClick={handleToggleFavorite}
                     disabled={isUpdatingFavorite || isLoadingUser}
                   >
@@ -280,22 +327,43 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                         className={`h-4 w-4 ${isFavorited ? 'text-red-500 fill-red-500' : 'text-[#2aaac6]'}`}
                       />
                     )}
-                    <span className="text-sm font-medium">{isFavorited ? 'Saved' : 'Save'}</span>
+                    <span className="text-sm font-medium">
+                      {isFavorited ? 'Saved' : 'Save'} ({currentFavoriteCount})
+                    </span>
                   </button>
+                  <button
+                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white rounded-full shadow-sm hover:shadow transition-all border border-gray-200 disabled:opacity-50"
+                    onClick={handleShare}
+                    disabled={isSharing}
+                  >
+                    {isSharing ? (
+                      <Loader2 className="h-4 w-4 text-[#2aaac6] animate-spin" />
+                    ) : (
+                      <Share2 className="h-4 w-4 text-[#2aaac6]" />
+                    )}
+                    <span className="text-sm font-medium">Share</span>
+                  </button>
+                  {shareResult && (
+                    <span
+                      className={`text-xs ${shareResult.type === 'success' ? 'text-green-600' : 'text-red-600'}`}
+                    >
+                      {shareResult.message}
+                    </span>
+                  )}
                 </div>
               </div>
 
               {/* Navigation options */}
-              <div className="flex justify-between mb-8">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-3 mb-8">
                 <Link
                   href="/news"
-                  className="px-6 py-3 bg-[#2aaac6] hover:bg-[#238ca3] transition-colors text-white font-medium rounded-lg"
+                  className="px-6 py-3 bg-[#2aaac6] hover:bg-[#238ca3] transition-colors text-white font-medium rounded-lg text-center sm:text-left"
                 >
                   More Articles
                 </Link>
                 <button
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  className="px-6 py-3 bg-white hover:bg-gray-50 transition-colors text-[#2aaac6] font-medium border border-gray-200 rounded-lg"
+                  className="px-6 py-3 bg-white hover:bg-gray-50 transition-colors text-[#2aaac6] font-medium border border-gray-200 rounded-lg text-center sm:text-left"
                 >
                   Back to Top
                 </button>

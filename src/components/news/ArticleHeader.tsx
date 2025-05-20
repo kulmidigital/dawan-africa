@@ -1,10 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { BlogPost } from '@/payload-types'
 import { format } from 'date-fns'
-import { CalendarDays, Clock, Share2, UserCircle } from 'lucide-react'
+import { CalendarDays, Clock, Share2, UserCircle, Loader2 } from 'lucide-react'
 
 // Import utility functions
 import { getAuthorDisplayName, getPostImageFromLayout } from '@/utils/postUtils'
@@ -14,6 +14,12 @@ interface ArticleHeaderProps {
 }
 
 export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
+  const [isSharing, setIsSharing] = useState(false)
+  const [shareResult, setShareResult] = useState<{
+    message: string
+    type: 'success' | 'error'
+  } | null>(null)
+
   const authorName = getAuthorDisplayName(post.author)
   const publishedDate = format(new Date(post.createdAt), 'MMMM d, yyyy')
   // Basic reading time estimate, can be enhanced
@@ -40,6 +46,34 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
 
   const coverImageUrl = getPostImageFromLayout(post.layout)
 
+  const handleShare = async () => {
+    setIsSharing(true)
+    setShareResult(null)
+
+    try {
+      if (navigator.share) {
+        // Web Share API is supported
+        await navigator.share({
+          title: post.name,
+          text: `Check out this article: ${post.name}`,
+          url: window.location.href,
+        })
+        setShareResult({ message: 'Shared successfully!', type: 'success' })
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(window.location.href)
+        setShareResult({ message: 'Link copied to clipboard!', type: 'success' })
+      }
+    } catch (error) {
+      console.error('Error sharing content:', error)
+      setShareResult({ message: 'Failed to share', type: 'error' })
+    } finally {
+      setIsSharing(false)
+      // Clear message after 3 seconds
+      setTimeout(() => setShareResult(null), 3000)
+    }
+  }
+
   return (
     <header>
       {/* Hero layout - always show */}
@@ -48,7 +82,7 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
           <>
             {/* With image */}
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/60 to-transparent z-10" />
-            <div className="w-full h-[50vh] md:h-[60vh] lg:h-[70vh] relative">
+            <div className="w-full h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] relative">
               <Image
                 src={coverImageUrl}
                 alt={post.name}
@@ -62,7 +96,7 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
         ) : (
           <>
             {/* Without image - gradient background */}
-            <div className="w-full h-[50vh] md:h-[60vh] lg:h-[70vh] relative">
+            <div className="w-full h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] relative">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-800 z-0"></div>
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cg%20fill-opacity%3D%220.05%22%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2250%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')] bg-[length:24px_24px] opacity-20 z-5"></div>
             </div>
@@ -70,23 +104,23 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
         )}
 
         {/* Title and meta info overlay */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 p-6 sm:p-8 md:p-12 lg:p-16 text-white">
+        <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-6 md:p-8 lg:p-16 text-white">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-shadow">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-6 leading-tight text-shadow">
               {post.name}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-x-6 sm:gap-x-8 gap-y-3 text-white/90 text-sm sm:text-base">
+            <div className="flex flex-wrap items-center gap-x-4 sm:gap-x-6 md:gap-x-8 gap-y-2 sm:gap-y-3 text-white/90 text-xs sm:text-sm md:text-base">
               <div className="flex items-center">
-                <UserCircle className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 text-white" />
+                <UserCircle className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1.5 sm:mr-2 md:mr-3 text-white" />
                 <span className="font-medium">By {authorName}</span>
               </div>
               <div className="flex items-center">
-                <CalendarDays className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 text-white" />
+                <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1.5 sm:mr-2 md:mr-3 text-white" />
                 <span>{publishedDate}</span>
               </div>
               <div className="flex items-center">
-                <Clock className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 text-white" />
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1.5 sm:mr-2 md:mr-3 text-white" />
                 <span>{readingTime} min read</span>
               </div>
             </div>
@@ -94,11 +128,26 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
         </div>
       </div>
 
-      {/* Floating share button */}
-      <div className="hidden md:block fixed right-8 top-32 z-50">
-        <button className="bg-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group">
-          <Share2 className="h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform" />
+      {/* Floating share button - shown on all screen sizes */}
+      <div className="fixed right-4 sm:right-8 top-24 sm:top-32 z-50">
+        <button
+          className="bg-white p-2 sm:p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group disabled:opacity-50"
+          onClick={handleShare}
+          disabled={isSharing}
+        >
+          {isSharing ? (
+            <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-[#2aaac6] animate-spin" />
+          ) : (
+            <Share2 className="h-4 w-4 sm:h-5 sm:w-5 text-[#2aaac6] group-hover:scale-110 transition-transform" />
+          )}
         </button>
+        {shareResult && (
+          <div className="absolute top-full mt-2 right-0 bg-white p-2 rounded-md shadow-md text-xs sm:text-sm whitespace-nowrap">
+            <span className={shareResult.type === 'success' ? 'text-green-600' : 'text-red-600'}>
+              {shareResult.message}
+            </span>
+          </div>
+        )}
       </div>
     </header>
   )

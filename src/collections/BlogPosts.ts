@@ -48,5 +48,25 @@ export const BlogPost: CollectionConfig = {
       label: 'Author',
       required: true,
     },
+    {
+      name: 'likes',
+      type: 'number',
+      label: 'Likes',
+      defaultValue: 0,
+      admin: {
+        position: 'sidebar',
+        readOnly: true, // Usually, likes are updated programmatically, not manually in admin
+      },
+    },
+    {
+      name: 'favoritesCount',
+      type: 'number',
+      label: 'Favorites Count',
+      defaultValue: 0,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
   ],
 }

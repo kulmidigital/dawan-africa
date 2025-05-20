@@ -48,4 +48,4 @@ output.wav
 output.mp3
 
 google-credentials.json
-update-admin-users.js
+/src/scripts

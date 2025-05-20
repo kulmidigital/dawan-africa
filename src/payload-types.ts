@@ -241,6 +241,8 @@ export interface BlogPost {
     | null;
   categories?: (string | BlogCategory)[] | null;
   author: string | User;
+  likes?: number | null;
+  favoritesCount?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -403,6 +405,8 @@ export interface BlogPostsSelect<T extends boolean = true> {
       };
   categories?: T;
   author?: T;
+  likes?: T;
+  favoritesCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }

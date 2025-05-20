@@ -67,8 +67,10 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, current
         : 'grid grid-cols-1 md:grid-cols-2 gap-6'
 
   return (
-    <div className="mt-12 pt-8 border-t border-gray-200">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-8">Related Articles</h2>
+    <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-200">
+      <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 sm:mb-8">
+        Related Articles
+      </h2>
       <div className={gridClass}>
         {filteredPosts.map((post) => {
           const thumbnailUrl = getPostThumbnail(post)
@@ -82,12 +84,13 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, current
             >
               {/* Thumbnail image if available */}
               {thumbnailUrl ? (
-                <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+                <div className="relative h-40 sm:h-48 w-full overflow-hidden bg-gray-100">
                   <Image
                     src={thumbnailUrl}
                     alt={post.name || 'Article thumbnail'}
                     className="object-cover object-center transform group-hover:scale-105 transition-transform duration-500"
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
@@ -98,15 +101,15 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, current
               )}
 
               {/* Article info */}
-              <div className="p-5 flex flex-col flex-grow">
-                <h3 className="text-lg font-semibold text-gray-800 group-hover:text-[#2aaac6] transition-colors duration-300 mb-2 line-clamp-2">
+              <div className="flex flex-col flex-grow p-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-[#2aaac6] transition-colors duration-300 mb-2 line-clamp-2">
                   {post.name}
                 </h3>
 
                 <div className="mt-auto pt-4">
                   {/* Date if available */}
                   {postDate && (
-                    <div className="flex items-center text-gray-500 text-sm mb-3">
+                    <div className="flex items-center text-gray-500 text-xs sm:text-sm mb-3">
                       <Calendar className="h-3.5 w-3.5 mr-1.5" />
                       <span>{postDate}</span>
                     </div>
@@ -139,8 +142,8 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, current
                 </div>
 
                 {/* Read more indication */}
-                <div className="mt-4 pt-3 border-t border-gray-100">
-                  <span className="inline-block text-sm font-medium text-[#2aaac6] group-hover:translate-x-1 transition-transform duration-300">
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <span className="inline-block text-xs sm:text-sm font-medium text-[#2aaac6] group-hover:translate-x-1 transition-transform duration-300">
                     Read more →
                   </span>
                 </div>
