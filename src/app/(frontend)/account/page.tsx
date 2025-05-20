@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, Suspense, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { User as PayloadUser } from '@/payload-types'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,12 +10,11 @@ import { UserPosts } from '@/components/account/UserPosts'
 import { UserSettings } from '@/components/account/UserSettings'
 import { UserBio } from '@/components/account/UserBio'
 
-// Inner component to handle client-side logic with hooks
-function AccountClientBoundary() {
+// Inner component to handle all client-side logic
+function AccountPageClientBoundary() {
   const [user, setUser] = useState<PayloadUser | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   const fetchUser = useCallback(async () => {
     setLoading(true)
@@ -27,21 +26,18 @@ function AccountClientBoundary() {
         if (data.user) {
           setUser(data.user)
         } else {
-          const redirect = searchParams.get('redirect') || '/account'
-          router.push(`/login?redirect=${encodeURIComponent(redirect)}`)
+          router.push('/login?redirect=/account')
         }
       } else {
-        const redirect = searchParams.get('redirect') || '/account'
-        router.push(`/login?redirect=${encodeURIComponent(redirect)}`)
+        router.push('/login?redirect=/account')
       }
     } catch (error) {
       console.error('Failed to fetch user:', error)
-      const redirect = searchParams.get('redirect') || '/account'
-      router.push(`/login?redirect=${encodeURIComponent(redirect)}`)
+      router.push('/login?redirect=/account')
     } finally {
       setLoading(false)
     }
-  }, [router, searchParams])
+  }, [router])
 
   useEffect(() => {
     fetchUser()
@@ -130,32 +126,19 @@ function AccountClientBoundary() {
   )
 }
 
-// Main page component with Suspense boundary
-export default function AccountPage() {
+
+const AccountPage = () => {
   return (
     <Suspense
       fallback={
-        <div className="bg-white min-h-screen py-6">
-          <div className="container mx-auto max-w-6xl px-4">
-            <div className="flex flex-col space-y-4">
-              <div className="flex items-center space-x-4">
-                <Skeleton className="h-16 w-16 rounded-full" />
-                <div>
-                  <Skeleton className="h-6 w-36 mb-2" />
-                  <Skeleton className="h-4 w-20" />
-                </div>
-              </div>
-              <Skeleton className="h-10 w-full rounded-md" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Skeleton className="h-64 rounded-md" />
-                <Skeleton className="h-64 rounded-md" />
-              </div>
-            </div>
-          </div>
+        <div className="flex items-center justify-center min-h-screen bg-slate-50">
+          <div className="animate-pulse text-slate-500 text-sm">Loading account details...</div>
         </div>
       }
     >
-      <AccountClientBoundary />
+      <AccountPageClientBoundary />
     </Suspense>
   )
 }
+
+export default AccountPage
