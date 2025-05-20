@@ -14,34 +14,41 @@ import { UserBio } from '@/components/account/UserBio'
 function AccountPageClientBoundary() {
   const [user, setUser] = useState<PayloadUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const [shouldRedirect, setShouldRedirect] = useState(false)
   const router = useRouter()
 
   const fetchUser = useCallback(async () => {
     setLoading(true)
+    setShouldRedirect(false)
     try {
-      // Fetch user data with depth to populate related fields like profilePicture, favoritedPosts, likedPosts
       const response = await fetch('/api/users/me?depth=2')
       if (response.ok) {
         const data = await response.json()
         if (data.user) {
           setUser(data.user)
         } else {
-          router.push('/login?redirect=/account')
+          setShouldRedirect(true)
         }
       } else {
-        router.push('/login?redirect=/account')
+        setShouldRedirect(true)
       }
     } catch (error) {
       console.error('Failed to fetch user:', error)
-      router.push('/login?redirect=/account')
+      setShouldRedirect(true)
     } finally {
       setLoading(false)
     }
-  }, [router])
+  }, [])
 
   useEffect(() => {
     fetchUser()
   }, [fetchUser])
+
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.push('/login?redirect=/account')
+    }
+  }, [shouldRedirect, router])
 
   const handleUserUpdate = (updatedUser: PayloadUser) => {
     setUser(updatedUser)
@@ -70,11 +77,21 @@ function AccountPageClientBoundary() {
     )
   }
 
+  if (!user && !loading) {
+    return (
+      <div className="bg-white min-h-screen py-6 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-slate-600">User not found. Redirecting...</p>
+        </div>
+      </div>
+    )
+  }
+
   if (!user) {
     return (
       <div className="bg-white min-h-screen py-6 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-600">Redirecting to login...</p>
+          <p className="text-slate-600">Session expired or user not found. Please log in.</p>
         </div>
       </div>
     )
@@ -125,7 +142,6 @@ function AccountPageClientBoundary() {
     </div>
   )
 }
-
 
 const AccountPage = () => {
   return (
