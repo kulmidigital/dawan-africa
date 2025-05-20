@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import '../global.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
@@ -28,16 +28,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning className={`scroll-smooth ${sourceSans3.variable}`}>
       <body className={cn('font-sans', 'min-h-screen flex flex-col bg-gray-50')}>
-        <AuthProvider>
-          <QueryProvider>
-            <NavigationProvider>
+        <Suspense fallback={<div>Loading...</div>}>
+          <AuthProvider>
+            <QueryProvider>
+              <NavigationProvider>
               <Toaster richColors position="top-right" />
               <Header />
               <main className="flex-grow">{children}</main>
               <Footer />
             </NavigationProvider>
-          </QueryProvider>
-        </AuthProvider>
+            </QueryProvider>
+          </AuthProvider>
+        </Suspense>
       </body>
     </html>
   )
