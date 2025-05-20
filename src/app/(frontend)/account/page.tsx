@@ -9,7 +9,6 @@ export default function AccountPage() {
         </div>
       }
     >
-      {/* Client component lives under a Suspense boundary, so RSC guard is satisfied */}
       <AccountPageClient />
     </Suspense>
   )

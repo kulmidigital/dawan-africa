@@ -676,10 +676,7 @@ const Header: React.FC = () => {
 
               {/* Add Football button in mobile navigation */}
               <FootballSheet>
-                <button
-                  className="text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6] w-full"
-                  onClick={() => setIsMenuOpen(false)}
-                >
+                <button className="text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6] w-full">
                   Football
                 </button>
               </FootballSheet>

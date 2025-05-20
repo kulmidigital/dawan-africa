@@ -8,7 +8,7 @@ import type { Metadata, ResolvingMetadata } from 'next'
 import { getPostImageFromLayout, getPostExcerpt } from '@/utils/postUtils'
 
 interface PageProps {
-  params: Promise<{ slug: string }> 
+  params: Promise<{ slug: string }>
 }
 
 // Function to fetch a single post by slug
@@ -79,13 +79,25 @@ export async function generateMetadata(
   }
 
   const parentMetadata = await parent
-  const parentTitle = parentMetadata.title?.absolute || 'Dawan Africa'
-  const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000' // Define siteUrl
+  const parentTitle = parentMetadata.title?.absolute ?? 'Dawan Africa'
+  const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000'
+
+  // Get post description with length limit for metadata
   const postDescription = getPostExcerpt(post, { maxLength: 160 })
+
+  // Get cover image URL from post layout
   const coverImageUrl = getPostImageFromLayout(post.layout)
+
+  // Ensure we have an absolute URL for the image
   const ogImage = coverImageUrl
-    ? `${siteUrl}${coverImageUrl}`
-    : `${siteUrl}/placeholder-og-image.png` // Ensure absolute URL and add fallback
+    ? coverImageUrl.startsWith('http')
+      ? coverImageUrl
+      : `${siteUrl}${coverImageUrl}`
+    : `${siteUrl}/placeholder-og-image.png`
+
+  // Get author name if available
+  const authorName =
+    typeof post.author === 'object' && post.author?.name ? post.author.name : 'Dawan Africa'
 
   return {
     title: `${post.name} | ${parentTitle}`,
@@ -93,46 +105,28 @@ export async function generateMetadata(
     openGraph: {
       title: post.name,
       description: postDescription,
-      url: `${siteUrl}/news/${post.slug}`, // Add post URL
-      siteName: parentMetadata.openGraph?.siteName || 'Dawan Africa', // Inherit or set siteName
+      url: `${siteUrl}/news/${post.slug}`,
+      siteName: parentMetadata.openGraph?.siteName ?? 'Dawan Africa',
       images: [
         {
-          url: ogImage, // Must be an absolute URL
-          width: 1200, // Example width
-          height: 630, // Example height
+          url: ogImage,
+          width: 1200,
+          height: 630,
           alt: post.name,
         },
       ],
-      type: 'article', // Set type to article
-      publishedTime: post.createdAt, // Add published time
-      // authors: post.author ? [getAuthorDisplayName(post.author)] : [], // Add author if available, might need getAuthorDisplayName
+      type: 'article',
+      publishedTime: post.createdAt,
+      authors: [authorName],
     },
-    // You can add Twitter card metadata here as well if desired
-    // twitter: {
-    //   card: 'summary_large_image',
-    //   title: post.name,
-    //   description: postDescription,
-    //   images: [ogImage],
-    //   creator: '@yourTwitterHandle', // Optional
-    // },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.name,
+      description: postDescription,
+      images: [ogImage],
+    },
   }
 }
-
-// Generate static paths (optional, for SSG)
-// export async function generateStaticParams() {
-//   const payload = await getPayload({ config })
-//   try {
-//     const posts = await payload.find({
-//       collection: 'blogPosts',
-//       limit: 100, // Adjust as needed
-//       select: { slug: true }, // Only fetch slugs
-//     })
-//     return posts.docs.map((post) => ({ slug: post.slug }))
-//   } catch (error) {
-//     console.error('Error fetching slugs for static params:', error)
-//     return []
-//   }
-// }
 
 export default async function NewsArticlePage({
   params: paramsPromise,
@@ -143,7 +137,7 @@ export default async function NewsArticlePage({
   const post = await getPostBySlug(slug)
 
   if (!post) {
-    notFound() // Triggers the not-found page
+    notFound() 
   }
 
   let relatedPosts: BlogPost[] = []

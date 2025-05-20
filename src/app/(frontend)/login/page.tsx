@@ -14,7 +14,7 @@ function LoginClientBoundary() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      const redirectTo = searchParams.get('redirect_to') || '/'
+      const redirectTo = searchParams.get('redirect_to') ?? '/'
       router.replace(redirectTo)
     }
   }, [user, authLoading, router, searchParams])
