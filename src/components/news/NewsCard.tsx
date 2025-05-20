@@ -146,6 +146,9 @@ export const NewsCard: React.FC<NewsCardProps> = ({ post }) => {
               href={`/news/${post.slug}`}
               className="flex items-center text-sm font-medium transition-colors hover:text-slate-900"
               style={{ color: brandColor }}
+              aria-label={`Read article: ${post.name}`}
+              data-article-id={post.id}
+              data-article-slug={post.slug}
             >
               <span className="mr-1">Read article</span>
               <span className="relative overflow-hidden inline-block w-4 h-4">

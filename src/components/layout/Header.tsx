@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, FormEvent } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { format } from 'date-fns'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 import {
   Calendar,
@@ -14,6 +15,7 @@ import {
   CloudRain,
   CloudSnow,
   Facebook,
+  GlobeIcon,
   Instagram,
   LogOut,
   MapPin,
@@ -25,6 +27,7 @@ import {
   UserPlus,
   Wind,
   X,
+  ChevronDown,
 } from 'lucide-react'
 
 import { BlogCategory, User as PayloadUser } from '@/payload-types'
@@ -36,6 +39,19 @@ import { Badge } from '@/components/ui/badge'
 import FootballSheet from '@/components/football/FootballSheet'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { useAuth } from '@/hooks/useAuth'
+import { SearchInput } from '@/components/common/SearchInput'
+import { useSearchStore } from '@/store/searchStore'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+
+// List of countries we want to feature
+const countries = ['Somalia', 'Kenya', 'Djibouti', 'Ethiopia', 'Eritrea']
 
 interface WeatherData {
   temperature: number
@@ -68,6 +84,22 @@ const getInitials = (name?: string | null, email?: string | null): string => {
 
 const Header: React.FC = () => {
   const { user, isLoading: authLoading, logout: authLogout } = useAuth()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Get searchTerm from store
+  const { setSearchTerm, setSearchField } = useSearchStore()
+
+  // Initialize search store from URL on mount
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || ''
+    const urlSearchField = searchParams.get('searchField') || 'name'
+
+    if (urlSearch) {
+      setSearchTerm(urlSearch)
+      setSearchField(urlSearchField)
+    }
+  }, [searchParams, setSearchTerm, setSearchField])
 
   const [categories, setCategories] = useState<BlogCategory[]>([])
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -82,6 +114,16 @@ const Header: React.FC = () => {
     error: false,
   })
 
+  // Navigate to search by country
+  const navigateToCountrySearch = (country: string) => {
+    setSearchTerm(country)
+    const params = new URLSearchParams()
+    params.set('search', country)
+    params.set('searchField', 'name')
+    router.push(`/news?${params.toString()}`)
+    setIsMenuOpen(false) // Close mobile menu if open
+  }
+
   // Get user's geolocation
   useEffect(() => {
     if (navigator.geolocation) {
@@ -93,7 +135,6 @@ const Header: React.FC = () => {
           })
         },
         (error) => {
-          console.error('Geolocation error:', error)
           // Fallback to Nairobi coordinates if geolocation fails
           setCoordinates({
             latitude: -1.2921,
@@ -437,16 +478,15 @@ const Header: React.FC = () => {
       <div className="py-2 border-b border-gray-100 hidden lg:block">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-12 gap-4 items-center">
-            {/* Search */}
+            {/* Search - updated to use SearchInput */}
             <div className="col-span-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  type="search"
-                  placeholder="Search news..."
-                  className="pl-10 h-9 rounded-full text-sm border-gray-200 focus-visible:ring-[#2aaac6]"
-                />
-              </div>
+              <SearchInput
+                isHeaderSearch={true}
+                inputClassName="h-9 rounded-full text-sm border-gray-200 focus-visible:ring-[#2aaac6]"
+                buttonClassName="h-9 px-3"
+                redirectPath="/news"
+                placeholder="Search articles..."
+              />
             </div>
 
             {/* Categories */}
@@ -468,6 +508,33 @@ const Header: React.FC = () => {
                   >
                     <Link href="/news">All News</Link>
                   </Button>
+
+                  {/* Countries dropdown using DropdownMenu component */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="text-gray-700 hover:text-[#2aaac6] hover:bg-transparent rounded-md flex items-center gap-1"
+                      >
+                        <GlobeIcon className="w-4 h-4 mr-1" />
+                        Countries
+                        <ChevronDown className="h-4 w-4 ml-1 opacity-50" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="min-w-[180px]">
+                      <DropdownMenuLabel>Select Country</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {countries.map((country) => (
+                        <DropdownMenuItem
+                          key={country}
+                          onClick={() => navigateToCountrySearch(country)}
+                          className="cursor-pointer"
+                        >
+                          {country}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
                   {/* Add Football button in desktop navigation */}
                   <FootballSheet>
@@ -505,23 +572,22 @@ const Header: React.FC = () => {
       {searchOpen && (
         <div className="py-2 border-t border-gray-100 lg:hidden">
           <div className="container mx-auto px-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                type="search"
-                placeholder="Search news..."
-                className="pl-10 w-full h-10 rounded-full text-sm border-gray-200 focus-visible:ring-[#2aaac6]"
-                autoFocus
-              />
-            </div>
+            <SearchInput
+              isHeaderSearch={true}
+              inputClassName="h-10 rounded-full text-sm border-gray-200 focus-visible:ring-[#2aaac6]"
+              buttonClassName="h-10 px-4"
+              redirectPath="/news"
+              autoFocus={true}
+              placeholder="Search articles..."
+            />
           </div>
         </div>
       )}
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="lg:hidden border-t border-gray-200 bg-white">
-          <div className="container mx-auto px-4 py-4">
+        <div className="lg:hidden border-t border-gray-200 bg-white fixed top-[55px] left-0 right-0 bottom-0 z-50 overflow-y-auto">
+          <div className="container mx-auto px-4 py-4 pb-20">
             {/* Mobile menu header with social/date/weather/football */}
             <div className="mb-4 pb-4 border-b border-gray-100">
               {/* Social Media */}
@@ -677,6 +743,28 @@ const Header: React.FC = () => {
                     </Link>
                   </>
                 )}
+              </div>
+
+              {/* Countries section in mobile navigation */}
+              <div className="pt-2 pb-1 border-t mt-2">
+                <Badge
+                  variant="outline"
+                  className="text-xs font-normal text-gray-500 bg-transparent"
+                >
+                  Countries
+                </Badge>
+              </div>
+
+              <div className="flex flex-col space-y-1">
+                {countries.map((country) => (
+                  <button
+                    key={country}
+                    onClick={() => navigateToCountrySearch(country)}
+                    className="text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6]"
+                  >
+                    {country}
+                  </button>
+                ))}
               </div>
 
               <div className="pt-2 pb-1 border-t mt-2">

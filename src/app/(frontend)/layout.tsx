@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer'
 import { Source_Sans_3 } from 'next/font/google'
 import { AuthProvider } from '@/hooks/useAuth'
 import { QueryProvider } from '@/components/providers/QueryProvider'
+import { NavigationProvider } from '@/providers/NavigationProvider'
 import { Toaster } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,9 @@ const sourceSans3 = Source_Sans_3({
 export const metadata = {
   description: 'Uncovering the Continent — Through Its Own Lens',
   title: 'Uncovering the Continent — Through Its Own Lens',
+  icons: {
+    icon: '/favicon.png',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -26,10 +30,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={cn('font-sans', 'min-h-screen flex flex-col bg-gray-50')}>
         <AuthProvider>
           <QueryProvider>
-            <Toaster richColors position="top-right" />
-            <Header />
-            <main className="flex-grow">{children}</main>
-            <Footer />
+            <NavigationProvider>
+              <Toaster richColors position="top-right" />
+              <Header />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+            </NavigationProvider>
           </QueryProvider>
         </AuthProvider>
       </body>

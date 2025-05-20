@@ -1,30 +1,34 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { BlogPost, Media, User as PayloadUser } from '@/payload-types'
+import { BlogPost as PayloadBlogPost, User as PayloadUser, BlogCategory } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
 import { ArticleHeader } from './ArticleHeader'
-import { Bookmark, MessageCircle, ThumbsUp, Loader2 } from 'lucide-react'
+import { Bookmark, ThumbsUp, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { RelatedArticles } from './RelatedArticles'
 
-// Simplified local User type for this component
-interface CurrentUser extends PayloadUser {
-  favoritedPosts?: (string | BlogPost)[]
-}
+// Use the original types from payload-types
+type BlogPost = PayloadBlogPost
+type User = PayloadUser
 
 interface ArticleViewProps {
   post: BlogPost
   relatedPosts?: BlogPost[]
 }
 
-export const ArticleView: React.FC<ArticleViewProps> = ({ post, relatedPosts }) => {
+export const ArticleView: React.FC<ArticleViewProps> = ({
+  post,
+  relatedPosts: propRelatedPosts,
+}) => {
   const router = useRouter()
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isFavorited, setIsFavorited] = useState(false)
   const [isLoadingUser, setIsLoadingUser] = useState(true)
   const [isUpdatingFavorite, setIsUpdatingFavorite] = useState(false)
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>(propRelatedPosts || [])
+  const [isLoadingRelated, setIsLoadingRelated] = useState(!propRelatedPosts)
 
   const fetchCurrentUser = useCallback(async () => {
     setIsLoadingUser(true)
@@ -36,7 +40,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ post, relatedPosts }) 
       })
       if (resp.ok) {
         const data = await resp.json()
-        setCurrentUser(data.user as CurrentUser)
+        setCurrentUser(data.user as User)
       } else {
         setCurrentUser(null)
       }
@@ -48,9 +52,97 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ post, relatedPosts }) 
     }
   }, [])
 
+  const fetchRelatedPosts = useCallback(async () => {
+    if (propRelatedPosts?.length) return // Don't fetch if already provided as props
+
+    setIsLoadingRelated(true)
+    try {
+      // Create a query to fetch all posts except current one
+      const queryParams = new URLSearchParams()
+
+      // Exclude current post
+      queryParams.append('where[id][not_equals]', post.id)
+
+      // Increase limit to get more posts that we'll randomize from
+      queryParams.append('limit', '20')
+
+      const response = await fetch(`/api/blogPosts?${queryParams.toString()}`)
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.docs && data.docs.length > 0) {
+          // First try to filter posts that share categories with the current post
+          let categoryMatches: BlogPost[] = []
+
+          if (post.categories && Array.isArray(post.categories) && post.categories.length > 0) {
+            const currentPostCategoryIds = post.categories.map((cat) =>
+              typeof cat === 'string' ? cat : cat.id,
+            )
+
+            // Find posts that share at least one category
+            categoryMatches = data.docs.filter((otherPost: BlogPost) => {
+              if (!otherPost.categories || !Array.isArray(otherPost.categories)) return false
+
+              const otherPostCategoryIds = otherPost.categories.map((cat) =>
+                typeof cat === 'string' ? cat : cat.id,
+              )
+
+              // Check if any category matches
+              return otherPostCategoryIds.some((catId) => currentPostCategoryIds.includes(catId))
+            })
+          }
+
+          // If we have enough category matches, use those
+          if (categoryMatches.length >= 6) {
+            // Truly randomize the array (Fisher-Yates shuffle)
+            for (let i = categoryMatches.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1))
+              ;[categoryMatches[i], categoryMatches[j]] = [categoryMatches[j], categoryMatches[i]]
+            }
+
+            setRelatedPosts(categoryMatches.slice(0, 6))
+          } else {
+            // If not enough category matches, use a mix of category matches and random posts
+            const otherPosts = data.docs.filter(
+              (p: BlogPost) => !categoryMatches.some((match) => match.id === p.id),
+            )
+
+            // Shuffle both arrays
+            for (let i = otherPosts.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1))
+              ;[otherPosts[i], otherPosts[j]] = [otherPosts[j], otherPosts[i]]
+            }
+
+            // Combine category matches with random posts to get 6 total
+            const combinedPosts = [
+              ...categoryMatches,
+              ...otherPosts.slice(0, 6 - categoryMatches.length),
+            ]
+
+            // Additional shuffle for good measure
+            for (let i = combinedPosts.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1))
+              ;[combinedPosts[i], combinedPosts[j]] = [combinedPosts[j], combinedPosts[i]]
+            }
+
+            setRelatedPosts(combinedPosts.slice(0, 6))
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching related posts:', error)
+    } finally {
+      setIsLoadingRelated(false)
+    }
+  }, [post.id, post.categories, propRelatedPosts])
+
   useEffect(() => {
     fetchCurrentUser()
   }, [fetchCurrentUser])
+
+  useEffect(() => {
+    fetchRelatedPosts()
+  }, [fetchRelatedPosts])
 
   useEffect(() => {
     if (currentUser && post) {
@@ -210,9 +302,13 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ post, relatedPosts }) 
               </div>
 
               {/* Related Articles Section */}
-              {relatedPosts && relatedPosts.length > 0 && (
+              {isLoadingRelated ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 text-[#2aaac6] animate-spin" />
+                </div>
+              ) : relatedPosts && relatedPosts.length > 0 ? (
                 <RelatedArticles posts={relatedPosts} currentPostId={post.id} />
-              )}
+              ) : null}
             </div>
           </div>
         </div>

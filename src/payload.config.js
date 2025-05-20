@@ -1,4 +1,3 @@
-// storage-adapter-import-placeholder
 import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
@@ -21,6 +20,7 @@ export default buildConfig({
     user: Users.slug,
     meta: {
       titleSuffix: '- Dawan Africa',
+      favicon: '/favicon.png',
     },
     components: {
       graphics: {

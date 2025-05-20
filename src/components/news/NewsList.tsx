@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { BlogPost } from '@/payload-types'
 import { NewsCard } from './NewsCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ArrowRight, ListFilter, Search } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { ArrowLeft, ArrowRight, ListFilter } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -14,77 +15,113 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SearchInput } from '@/components/common/SearchInput'
+import { useSearchStore } from '@/store/searchStore'
 
 const POSTS_PER_PAGE = 100
 
-export const NewsList: React.FC = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState('-createdAt')
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setIsLoading(true)
-      try {
-        const whereConditions: Array<Record<string, any>> = []
+const fetchBlogPosts = async (context: { queryKey: readonly unknown[] }) => {
+  const [_key, page, term, sort] = context.queryKey as [string, number, string, string]
 
-        if (searchTerm) {
-          whereConditions.push({ name: { like: searchTerm } })
-        }
+  // Construct the URL with query parameters
+  const queryParams = new URLSearchParams({
+    limit: String(POSTS_PER_PAGE),
+    page: String(page),
+    sort: sort,
+    depth: '1',
+  })
 
-        const queryParams = new URLSearchParams({
-          limit: String(POSTS_PER_PAGE),
-          page: String(currentPage),
-          sort: sortBy,
-          depth: '1',
-        })
+  if (term && term.trim()) {
+    // Use exact Payload CMS query format for searching
+    queryParams.append('where[name][like]', term.trim())
+  }
 
-        if (whereConditions.length > 0) {
-          queryParams.set('where', JSON.stringify({ and: whereConditions }))
-        }
+  // Make the API request
+  const apiUrl = `/api/blogPosts?${queryParams.toString()}`
 
-        const response = await fetch(`/api/blogPosts?${queryParams.toString()}`)
-        if (!response.ok) throw new Error('Failed to fetch posts')
-
-        const data = await response.json()
-        if (data.docs && Array.isArray(data.docs)) {
-          setPosts(data.docs)
-          setTotalPages(data.totalPages || 1)
-        }
-      } catch (error) {
-        // Error handling without console.log
-        setPosts([])
-        setTotalPages(1)
-      } finally {
-        setIsLoading(false)
-      }
+  try {
+    const response = await fetch(apiUrl)
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || 'Failed to fetch posts')
     }
 
-    fetchPosts()
-  }, [currentPage, searchTerm, sortBy])
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value)
-    setCurrentPage(1) // Reset to first page on new search
+    const data = await response.json()
+    return data
+  } catch (error) {
+    throw error
   }
+}
+
+export const NewsList: React.FC = () => {
+  const searchParams = useSearchParams()
+  const [currentPage, setCurrentPage] = useState(1)
+  const [sortBy, setSortBy] = useState('-createdAt')
+
+  // Get searchTerm from store
+  const { searchTerm, setSearchTerm } = useSearchStore()
+
+  // Initialize store from URL on first load and when URL changes
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || ''
+
+    // Only update if different to avoid infinite loops
+    if (urlSearch !== searchTerm) {
+      setSearchTerm(urlSearch)
+      // Reset to first page when search changes
+      setCurrentPage(1)
+    }
+  }, [searchParams, setSearchTerm, searchTerm])
+
+  // Now using the store's searchTerm in the query with explicit dependency
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['blogPosts', currentPage, searchTerm, sortBy],
+    queryFn: fetchBlogPosts,
+    staleTime: 1000 * 60, // 1 minute
+  })
+
+  // Force refetch when search term changes
+  useEffect(() => {
+    refetch()
+  }, [searchTerm, refetch])
+
+  // Get all posts from the API
+  const allPosts: BlogPost[] = data?.docs || []
+  const totalPages: number = data?.totalPages || 1
+
+  // Apply client-side filtering as a fallback if API filtering isn't working
+  const posts = useMemo(() => {
+    if (!searchTerm || !searchTerm.trim()) {
+      return allPosts
+    }
+
+    // If we're showing all posts and have a search term, try client-side filtering
+    const term = searchTerm.trim().toLowerCase()
+    const filtered = allPosts.filter((post) => post.name?.toLowerCase().includes(term))
+    return filtered
+  }, [allPosts, searchTerm])
 
   const handleSortChange = (value: string) => {
     setSortBy(value)
-    setCurrentPage(1) // Reset to first page on new sort
+    setCurrentPage(1)
   }
 
   const goToPreviousPage = () => {
-    setIsLoading(true) // Set loading immediately
     setCurrentPage((prev) => Math.max(1, prev - 1))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const goToNextPage = () => {
-    setIsLoading(true) // Set loading immediately
     setCurrentPage((prev) => Math.min(totalPages, prev + 1))
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  if (isError) {
+    return (
+      <div className="container mx-auto px-4 py-12 text-center">
+        <p className="text-red-500">Error loading news: {error?.message || 'Unknown error'}</p>
+      </div>
+    )
   }
 
   return (
@@ -100,16 +137,11 @@ export const NewsList: React.FC = () => {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full md:w-auto">
-          <div className="relative w-full sm:w-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search articles..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="pl-9 sm:pl-10 h-9 sm:h-10 w-full sm:w-52 md:w-64 bg-white shadow-sm text-sm"
-            />
-          </div>
+          <SearchInput
+            inputClassName="h-9 sm:h-10 w-full bg-white shadow-sm text-sm"
+            className="w-full sm:flex-grow"
+            redirectPath="/news"
+          />
           <Select value={sortBy} onValueChange={handleSortChange}>
             <SelectTrigger className="h-9 sm:h-10 w-full sm:w-40 md:w-48 bg-white shadow-sm text-xs sm:text-sm">
               <ListFilter className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 text-gray-500" />
@@ -127,8 +159,8 @@ export const NewsList: React.FC = () => {
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-          {Array.from({ length: POSTS_PER_PAGE }).map((_, i) => (
-            <Skeleton key={i} className="aspect-[16/9] rounded-lg sm:rounded-xl mb-4" />
+          {Array.from({ length: POSTS_PER_PAGE > 12 ? 12 : POSTS_PER_PAGE }).map((_, i) => (
+            <Skeleton key={i} className="aspect-[16/10] rounded-lg sm:rounded-xl" />
           ))}
         </div>
       ) : posts.length > 0 ? (
@@ -149,7 +181,7 @@ export const NewsList: React.FC = () => {
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && !isLoading && (
+      {totalPages > 1 && !isLoading && posts.length > 0 && (
         <div className="mt-8 sm:mt-10 md:mt-12 flex justify-center items-center gap-2 sm:gap-4">
           <Button
             variant="outline"

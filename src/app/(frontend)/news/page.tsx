@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { NewsList } from '@/components/news/NewsList'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // Optionally, you can add metadata for SEO
 // import type { Metadata } from 'next'
@@ -8,10 +9,37 @@ import { NewsList } from '@/components/news/NewsList'
 //   description: 'Stay updated with the latest news, articles, and insights from Dawan Africa.',
 // }
 
+// Define a skeleton component for the fallback
+const NewsPageSkeleton = () => {
+  return (
+    <div className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
+      {/* Skeleton for Header and Filters section in NewsList */}
+      <div className="mb-6 sm:mb-8 md:mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
+        <div>
+          <Skeleton className="h-8 w-48 mb-2 rounded" /> {/* Title */}
+          <Skeleton className="h-5 w-72 rounded" /> {/* Subtitle */}
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full md:w-auto">
+          <Skeleton className="h-10 w-full sm:w-64 rounded" /> {/* Search input */}
+          <Skeleton className="h-10 w-full sm:w-48 rounded" /> {/* Sort select */}
+        </div>
+      </div>
+      {/* Skeleton for Posts Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Skeleton key={i} className="aspect-[16/10] rounded-lg sm:rounded-xl" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function NewsPage() {
   return (
     <main className="bg-gray-50 min-h-screen">
-      <NewsList />
+      <Suspense fallback={<NewsPageSkeleton />}>
+        <NewsList />
+      </Suspense>
     </main>
   )
 }
