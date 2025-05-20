@@ -23,7 +23,7 @@ interface FeaturedPostsProps {
 
 export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [] }) => {
   const [activeTab, setActiveTab] = useState('latest')
-  const { posts, isLoadingPosts, postsError, categories, isLoadingCategories, categoriesError } =
+  const { posts, isLoadingPosts, postsError, isLoadingCategories, categoriesError } =
     useFeaturedPostsData({ excludePostIds })
 
   const topPostsData = posts.slice(0, 3)

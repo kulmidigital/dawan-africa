@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useEffect, useState, Suspense, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { User as PayloadUser } from '@/payload-types'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,14 +10,12 @@ import { UserPosts } from '@/components/account/UserPosts'
 import { UserSettings } from '@/components/account/UserSettings'
 import { UserBio } from '@/components/account/UserBio'
 
-// It's good practice to define a richer User type for the frontend if needed,
-// especially if payload-types.ts takes time to update or if you add client-side transformations.
-// However, for now, we'll rely on PayloadUser and ensure data is fetched with adequate depth.
-
-const AccountPage = () => {
+// Inner component to handle client-side logic with hooks
+function AccountClientBoundary() {
   const [user, setUser] = useState<PayloadUser | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const fetchUser = useCallback(async () => {
     setLoading(true)
@@ -29,18 +27,21 @@ const AccountPage = () => {
         if (data.user) {
           setUser(data.user)
         } else {
-          router.push('/login?redirect=/account')
+          const redirect = searchParams.get('redirect') || '/account'
+          router.push(`/login?redirect=${encodeURIComponent(redirect)}`)
         }
       } else {
-        router.push('/login?redirect=/account')
+        const redirect = searchParams.get('redirect') || '/account'
+        router.push(`/login?redirect=${encodeURIComponent(redirect)}`)
       }
     } catch (error) {
       console.error('Failed to fetch user:', error)
-      router.push('/login?redirect=/account')
+      const redirect = searchParams.get('redirect') || '/account'
+      router.push(`/login?redirect=${encodeURIComponent(redirect)}`)
     } finally {
       setLoading(false)
     }
-  }, [router])
+  }, [router, searchParams])
 
   useEffect(() => {
     fetchUser()
@@ -129,4 +130,32 @@ const AccountPage = () => {
   )
 }
 
-export default AccountPage
+// Main page component with Suspense boundary
+export default function AccountPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-white min-h-screen py-6">
+          <div className="container mx-auto max-w-6xl px-4">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-4">
+                <Skeleton className="h-16 w-16 rounded-full" />
+                <div>
+                  <Skeleton className="h-6 w-36 mb-2" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              </div>
+              <Skeleton className="h-10 w-full rounded-md" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Skeleton className="h-64 rounded-md" />
+                <Skeleton className="h-64 rounded-md" />
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <AccountClientBoundary />
+    </Suspense>
+  )
+}
