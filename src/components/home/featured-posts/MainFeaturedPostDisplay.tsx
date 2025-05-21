@@ -43,9 +43,6 @@ export const MainFeaturedPostDisplay: React.FC<MainFeaturedPostDisplayProps> = (
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-            <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
-              <Badge className="bg-[#2aaac6] hover:bg-[#2aaac6] text-white text-xs">FEATURED</Badge>
-            </div>
             <div className="absolute bottom-0 left-0 p-3 sm:p-6">
               <div className="mb-2 flex items-center text-[10px] sm:text-xs text-gray-300 gap-2 sm:gap-3 flex-wrap">
                 <span className="flex items-center">

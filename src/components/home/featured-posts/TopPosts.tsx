@@ -7,7 +7,6 @@ import { BlogPost } from '@/payload-types'
 import { ArrowRight, Clock } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 import { getPostImageFromLayout, getPostExcerpt, getAuthorDisplayName } from '@/utils/postUtils'
@@ -45,9 +44,6 @@ export const TopPosts: React.FC<TopPostsProps> = ({ posts }) => {
                   <span className="text-gray-400 text-xs sm:text-sm">No image</span>
                 </div>
               )}
-              <div className="absolute top-0 left-0 w-full p-2 sm:p-3">
-                <Badge className="bg-[#2aaac6]/80 backdrop-blur-sm text-white text-xs">New</Badge>
-              </div>
             </div>
             <CardContent className="p-3 sm:p-5">
               <div className="flex items-center text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-3 gap-2 sm:gap-3 flex-wrap">

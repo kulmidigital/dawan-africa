@@ -1,8 +1,9 @@
-import { CollectionConfig } from 'payload'
+import { CollectionConfig, Forbidden } from 'payload'
 import { RichText } from '../blocks/richText/schema.ts'
 import { Cover } from '../blocks/cover/schema.ts'
 import { Image } from '../blocks/image/schema.ts'
-import { RecentBlogPosts } from '../blocks/recentBlogPosts/schema.ts'
+import slugify from 'slugify'
+import { ObjectId } from 'mongodb'
 
 export const BlogPost: CollectionConfig = {
   slug: 'blogPosts',
@@ -13,7 +14,7 @@ export const BlogPost: CollectionConfig = {
     {
       name: 'name',
       type: 'text',
-      label: 'Name',
+      label: 'Title',
       required: true,
     },
     {
@@ -22,6 +23,15 @@ export const BlogPost: CollectionConfig = {
       label: 'Slug',
       admin: {
         position: 'sidebar',
+        readOnly: true,
+        description: 'This is automatically generated from the title.',
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value, data }) => {
+            return data?.title ? slugify(data.title, { lower: true, strict: true }) : value
+          },
+        ],
       },
       required: true,
     },
@@ -29,7 +39,7 @@ export const BlogPost: CollectionConfig = {
       name: 'layout',
       type: 'blocks',
       label: 'Layout',
-      blocks: [RichText, Cover, Image, RecentBlogPosts],
+      blocks: [RichText, Cover, Image],
     },
     {
       name: 'categories',
@@ -55,7 +65,7 @@ export const BlogPost: CollectionConfig = {
       defaultValue: 0,
       admin: {
         position: 'sidebar',
-        readOnly: true, // Usually, likes are updated programmatically, not manually in admin
+        readOnly: true,
       },
     },
     {
@@ -66,6 +76,73 @@ export const BlogPost: CollectionConfig = {
       admin: {
         position: 'sidebar',
         readOnly: true,
+      },
+    },
+    {
+      name: 'views',
+      type: 'number',
+      label: 'Views',
+      defaultValue: 0,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'isEditorsPick',
+      type: 'checkbox',
+      label: "Editor's Pick",
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+  ],
+  endpoints: [
+    {
+      path: '/increment-view/:id',
+      method: 'post',
+      handler: async (req) => {
+        const idFromParams = req.routeParams?.id
+        if (typeof idFromParams !== 'string') {
+          return Response.json({ error: 'Invalid post ID format' }, { status: 400 })
+        }
+
+        try {
+          // Get the MongoDB collection through Payload's db.collections interface
+          const collection = req.payload.db.collections.blogPosts.collection
+
+          // Convert string ID to MongoDB ObjectId
+          const objectId = new ObjectId(idFromParams)
+
+          // Use MongoDB's native $inc operator for atomic increment
+          // This is a single atomic operation - no read required
+          const result = await collection.updateOne({ _id: objectId }, { $inc: { views: 1 } })
+
+          if (result.matchedCount === 0) {
+            return Response.json({ error: 'Post not found' }, { status: 404 })
+          }
+
+          return Response.json({
+            success: true,
+            message: 'View count incremented successfully',
+          })
+        } catch (error) {
+          // If the ID string is invalid for ObjectId, catch that specific error
+          if (error instanceof Error && error.message.includes('Invalid ObjectId')) {
+            return Response.json({ error: 'Invalid post ID format' }, { status: 400 })
+          }
+
+          req.payload.logger.error(
+            `Error incrementing view count for post ${idFromParams}: ${error instanceof Error ? error.message : String(error)}`,
+          )
+
+          if (error instanceof Forbidden) {
+            return Response.json({ error: 'Forbidden' }, { status: 403 })
+          }
+
+          return Response.json({ error: 'Internal server error' }, { status: 500 })
+        }
       },
     },
   ],

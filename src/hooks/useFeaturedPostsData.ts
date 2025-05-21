@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 
 interface UseFeaturedPostsDataProps {
   excludePostIds?: string[]
+  activeTab: string
 }
 
 // Define a fetcher function for SWR
@@ -34,6 +35,7 @@ interface UseFeaturedPostsDataReturn {
 
 export const useFeaturedPostsData = ({
   excludePostIds = [],
+  activeTab,
 }: UseFeaturedPostsDataProps): UseFeaturedPostsDataReturn => {
   // Memoize excludePostIds to create a stable cache key part if it's an array of strings
   const stableExcludePostIds = useMemo(() => excludePostIds.join(','), [excludePostIds])
@@ -42,19 +44,29 @@ export const useFeaturedPostsData = ({
 
   const queryParamsObject = useMemo(() => {
     const baseParams: Record<string, string> = {
-      limit: '50',
+      limit: '6',
       depth: '2',
-      sort: '-createdAt',
     }
-    const whereClause: any = {
-      and: [
-        {
-          createdAt: {
-            greater_than: thirtyDaysAgo,
-          },
+    const whereClause: any = { and: [] }
+
+    if (activeTab === 'trending') {
+      baseParams.sort = '-views'
+      whereClause.and.push({
+        createdAt: {
+          greater_than: thirtyDaysAgo,
         },
-      ],
+      })
+    } else if (activeTab === 'editors') {
+      baseParams.sort = '-createdAt'
+      whereClause.and.push({
+        isEditorsPick: {
+          equals: true,
+        },
+      })
+    } else {
+      baseParams.sort = '-createdAt'
     }
+
     if (stableExcludePostIds) {
       whereClause.and.push({
         id: {
@@ -62,11 +74,15 @@ export const useFeaturedPostsData = ({
         },
       })
     }
-    baseParams.where = JSON.stringify(whereClause)
-    return baseParams
-  }, [thirtyDaysAgo, stableExcludePostIds])
 
-  const postsQueryKey = ['blogPosts', 'featured', queryParamsObject]
+    if (whereClause.and.length > 0) {
+      baseParams.where = JSON.stringify(whereClause)
+    }
+
+    return baseParams
+  }, [thirtyDaysAgo, stableExcludePostIds, activeTab])
+
+  const postsQueryKey = ['blogPosts', `featured-${activeTab}`, queryParamsObject]
 
   const {
     data: postsData,

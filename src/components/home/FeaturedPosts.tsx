@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 // Import custom hook
 import { useFeaturedPostsData } from '@/hooks/useFeaturedPostsData'
+import { useRecentNewsData } from '@/hooks/useRecentNewsData'
 
 // Import sub-components
 import { TopPosts } from './featured-posts/TopPosts'
@@ -19,19 +20,37 @@ import { ListPosts } from './featured-posts/ListPosts'
 
 interface FeaturedPostsProps {
   excludePostIds?: string[]
+  heroPostIds?: string[]
 }
 
-export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [] }) => {
-  const [activeTab, setActiveTab] = useState('latest')
-  const { posts, isLoadingPosts, postsError, isLoadingCategories, categoriesError } =
-    useFeaturedPostsData({ excludePostIds })
+export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({
+  excludePostIds = [],
+  heroPostIds = [],
+}) => {
+  const [activeTab, setActiveTab] = useState('trending')
 
-  const topPostsData = posts.slice(0, 3)
-  const mainFeaturedPostData = posts[3] || null
-  const gridPostsData = posts.slice(4, 10)
-  const listPostsData = posts.slice(10)
+  const {
+    posts: tabbedPosts,
+    isLoadingPosts: isLoadingTabbedPosts,
+    postsError: tabbedPostsError,
+    isLoadingCategories,
+    categoriesError,
+  } = useFeaturedPostsData({ excludePostIds, activeTab })
 
-  if (isLoadingPosts || isLoadingCategories) {
+  const {
+    posts: recentNewsItems,
+    isLoading: isLoadingRecentNews,
+    error: recentNewsError,
+  } = useRecentNewsData({ limit: 6, excludePostIds: heroPostIds })
+
+  const topPostsData = tabbedPosts.slice(0, 3)
+  const mainFeaturedPostData = tabbedPosts.length > 3 ? tabbedPosts[3] : null
+  const gridPostsData = tabbedPosts.slice(4, 6)
+
+  const isLoading = isLoadingTabbedPosts || isLoadingCategories || isLoadingRecentNews
+  const hasError = tabbedPostsError || categoriesError || recentNewsError
+
+  if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 sm:py-10">
         <div className="space-y-6 sm:space-y-8">
@@ -45,19 +64,28 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [
             ))}
           </div>
           <Skeleton className="h-64 sm:h-96 rounded-xl" />
+          <div className="mt-8 sm:mt-12">
+            <Skeleton className="h-6 w-40 mx-auto mb-6 sm:mb-8 rounded-md" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-x-5 sm:gap-y-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} className="h-20 rounded-md" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     )
   }
 
-  if (postsError || categoriesError) {
+  if (hasError) {
     return (
       <div className="container mx-auto px-4 py-6 sm:py-10">
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-red-500">
-              {postsError ? 'Error loading posts. ' : ''}
+              {tabbedPostsError ? 'Error loading featured stories. ' : ''}
               {categoriesError ? 'Error loading categories. ' : ''}
+              {recentNewsError ? 'Error loading recent news. ' : ''}
               Please try again later.
             </p>
           </CardContent>
@@ -66,12 +94,12 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [
     )
   }
 
-  if (posts.length === 0) {
+  if (tabbedPosts.length === 0 && recentNewsItems.length === 0) {
     return (
       <div className="container mx-auto px-4 py-6 sm:py-10">
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-gray-500">No additional posts available.</p>
+            <p className="text-gray-500">No posts available at the moment.</p>
           </CardContent>
         </Card>
       </div>
@@ -90,18 +118,12 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [
               </h2>
             </div>
             <Tabs
-              defaultValue="latest"
+              defaultValue="trending"
               value={activeTab}
               onValueChange={setActiveTab}
               className="w-full sm:w-auto"
             >
               <TabsList className="bg-gray-100/80 w-full rounded-full h-9">
-                <TabsTrigger
-                  value="latest"
-                  className="flex-1 sm:flex-none text-xs sm:text-sm data-[state=active]:bg-white data-[state=active]:text-[#2aaac6] rounded-full h-7"
-                >
-                  Latest
-                </TabsTrigger>
                 <TabsTrigger
                   value="trending"
                   className="flex-1 sm:flex-none text-xs sm:text-sm data-[state=active]:bg-white data-[state=active]:text-[#2aaac6] rounded-full h-7"
@@ -126,7 +148,7 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({ excludePostIds = [
           <GridPosts posts={gridPostsData} />
         </div>
 
-        <ListPosts posts={listPostsData} />
+        <ListPosts posts={recentNewsItems} />
       </div>
     </section>
   )

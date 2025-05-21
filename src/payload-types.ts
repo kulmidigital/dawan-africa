@@ -180,6 +180,9 @@ export interface Media {
 export interface BlogPost {
   id: string;
   name: string;
+  /**
+   * This is automatically generated from the title.
+   */
   slug: string;
   layout?:
     | (
@@ -231,18 +234,14 @@ export interface BlogPost {
             blockName?: string | null;
             blockType: 'image';
           }
-        | {
-            shownPosts?: (string | BlogPost)[] | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'recentBlogPosts';
-          }
       )[]
     | null;
   categories?: (string | BlogCategory)[] | null;
   author: string | User;
   likes?: number | null;
   favoritesCount?: number | null;
+  views?: number | null;
+  isEditorsPick?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -395,18 +394,13 @@ export interface BlogPostsSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        recentBlogPosts?:
-          | T
-          | {
-              shownPosts?: T;
-              id?: T;
-              blockName?: T;
-            };
       };
   categories?: T;
   author?: T;
   likes?: T;
   favoritesCount?: T;
+  views?: T;
+  isEditorsPick?: T;
   updatedAt?: T;
   createdAt?: T;
 }

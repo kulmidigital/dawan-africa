@@ -2,10 +2,10 @@ import React from 'react'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { BlogPost, BlogCategory } from '@/payload-types'
-import { ArticleView } from '@/components/news/ArticleView'
 import { notFound } from 'next/navigation'
 import type { Metadata, ResolvingMetadata } from 'next'
 import { getPostImageFromLayout, getPostExcerpt } from '@/utils/postUtils'
+import { ArticleClientView } from '@/components/news/ArticleClientView'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -137,7 +137,7 @@ export default async function NewsArticlePage({
   const post = await getPostBySlug(slug)
 
   if (!post) {
-    notFound() 
+    notFound()
   }
 
   let relatedPosts: BlogPost[] = []
@@ -157,7 +157,7 @@ export default async function NewsArticlePage({
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <ArticleView post={post} relatedPosts={relatedPosts} />
+      <ArticleClientView post={post} relatedPosts={relatedPosts} />
     </main>
   )
 }
