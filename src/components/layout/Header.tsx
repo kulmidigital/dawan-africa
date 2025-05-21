@@ -1,40 +1,41 @@
 'use client'
 
-import React, { useState, useEffect, FormEvent } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { useRouter, useSearchParams } from 'next/navigation'
 
+// Replace Lucide icons with React Icons
 import {
-  Bitcoin,
-  Calendar,
-  Cloud,
-  CloudDrizzle,
-  CloudFog,
-  CloudLightning,
-  CloudRain,
-  CloudSnow,
-  Facebook,
-  GlobeIcon,
-  Instagram,
-  LogOut,
-  MapPin,
-  Menu,
-  Search,
-  Sun,
-  Twitter,
-  User,
-  UserPlus,
-  Wind,
-  X,
-  ChevronDown,
-} from 'lucide-react'
+  BiLogoTwitter,
+  BiLogoFacebook,
+  BiLogoYoutube,
+  BiLogoInstagram,
+  BiCalendar,
+  BiCloud,
+  BiCloudDrizzle,
+  BiCloudLightning,
+  BiCloudRain,
+  BiCloudSnow,
+  BiWind,
+  BiMapPin,
+  BiSearch,
+  BiMenu,
+  BiX,
+  BiUser,
+  BiUserPlus,
+  BiLogOut,
+  BiCoin,
+  BiGlobe,
+  BiChevronDown,
+  BiSun,
+  BiLogoTiktok,
+} from 'react-icons/bi'
 
-import { BlogCategory, User as PayloadUser } from '@/payload-types'
+import { BlogCategory } from '@/payload-types'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import FootballSheet from '@/components/football/FootballSheet'
@@ -94,7 +95,7 @@ const Header: React.FC = () => {
   // Initialize search store from URL on mount
   useEffect(() => {
     const urlSearch = searchParams.get('search') || ''
-    const urlSearchField = searchParams.get('searchField') || 'name'
+    const urlSearchField = searchParams.get('searchField') ?? 'name'
 
     if (urlSearch) {
       setSearchTerm(urlSearch)
@@ -185,10 +186,10 @@ const Header: React.FC = () => {
 
         // Extract city or town name from address
         const locationName =
-          data.address?.city ||
-          data.address?.town ||
-          data.address?.state ||
-          data.address?.country ||
+          data.address?.city ??
+          data.address?.town ??
+          data.address?.state ??
+          data.address?.country ??
           'Unknown'
 
         setWeather((prev) => ({
@@ -243,20 +244,23 @@ const Header: React.FC = () => {
   // Get weather icon based on weather code
   const getWeatherIcon = (code: number) => {
     // WMO Weather interpretation codes (https://open-meteo.com/en/docs)
-    if (code === 0) return <Sun className="mr-1.5 h-3.5 w-3.5 text-amber-500" /> // Clear sky
-    if (code >= 1 && code <= 3) return <Cloud className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> // Partly cloudy
-    if (code >= 45 && code <= 48) return <CloudFog className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> // Fog
+    if (code === 0) return <BiSun className="mr-1.5 h-3.5 w-3.5 text-amber-500" /> // Clear sky
+    if (code >= 1 && code <= 3) return <BiCloud className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> // Partly cloudy
+    if (code >= 45 && code <= 48) return <BiCloud className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> // Fog
     if ((code >= 51 && code <= 55) || (code >= 61 && code <= 65))
-      return <CloudRain className="mr-1.5 h-3.5 w-3.5 text-blue-400" /> // Rain
+      return <BiCloudRain className="mr-1.5 h-3.5 w-3.5 text-blue-400" /> // Rain
     if (code >= 56 && code <= 57)
-      return <CloudDrizzle className="mr-1.5 h-3.5 w-3.5 text-blue-300" /> // Drizzle
-    if (code >= 71 && code <= 77) return <CloudSnow className="mr-1.5 h-3.5 w-3.5 text-blue-100" /> // Snow
-    if (code >= 80 && code <= 82) return <CloudRain className="mr-1.5 h-3.5 w-3.5 text-blue-500" /> // Rain showers
-    if (code >= 85 && code <= 86) return <CloudSnow className="mr-1.5 h-3.5 w-3.5 text-blue-200" /> // Snow showers
+      return <BiCloudDrizzle className="mr-1.5 h-3.5 w-3.5 text-blue-300" /> // Drizzle
+    if (code >= 71 && code <= 77)
+      return <BiCloudSnow className="mr-1.5 h-3.5 w-3.5 text-blue-100" /> // Snow
+    if (code >= 80 && code <= 82)
+      return <BiCloudRain className="mr-1.5 h-3.5 w-3.5 text-blue-500" /> // Rain showers
+    if (code >= 85 && code <= 86)
+      return <BiCloudSnow className="mr-1.5 h-3.5 w-3.5 text-blue-200" /> // Snow showers
     if (code >= 95 && code <= 99)
-      return <CloudLightning className="mr-1.5 h-3.5 w-3.5 text-yellow-500" /> // Thunderstorm
+      return <BiCloudLightning className="mr-1.5 h-3.5 w-3.5 text-yellow-500" /> // Thunderstorm
 
-    return <Cloud className="mr-1.5 h-3.5 w-3.5" /> // Default
+    return <BiCloud className="mr-1.5 h-3.5 w-3.5" /> // Default
   }
 
   // Get weather condition text based on weather code
@@ -296,7 +300,7 @@ const Header: React.FC = () => {
                 className="text-gray-600 hover:text-[#2aaac6] -ml-2"
                 aria-label="Open main menu"
               >
-                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isMenuOpen ? <BiX className="h-5 w-5" /> : <BiMenu className="h-5 w-5" />}
               </Button>
             </div>
 
@@ -329,36 +333,44 @@ const Header: React.FC = () => {
               </div>
 
               {/* Social Media (tablet and up) */}
-              <div className="hidden sm:flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-4">
                 <a
-                  href="https://twitter.com/dawanafrica"
+                  href="https://youtube.com/@dawanafrica?si=MeDNmWJDGkFWiF45"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-500 hover:text-[#2aaac6] transition-colors"
                 >
-                  <Twitter size={16} />
+                  <BiLogoYoutube size={16} />
                 </a>
                 <a
-                  href="https://facebook.com/dawanafrica"
+                  href="https://x.com/dawanafrica?s=11&t=cGgYbc_v8C1zcdmiZHSiRg"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-500 hover:text-[#2aaac6] transition-colors"
                 >
-                  <Facebook size={16} />
+                  <BiLogoTwitter size={16} />
                 </a>
                 <a
-                  href="https://instagram.com/dawanafrica"
+                  href="https://www.facebook.com/share/1DLeMnVa2e/?mibextid=wwXIfr"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-500 hover:text-[#2aaac6] transition-colors"
                 >
-                  <Instagram size={16} />
+                  <BiLogoFacebook size={16} />
+                </a>
+                <a
+                  href="https://www.tiktok.com/@dawanafrica?_t=ZS-8wXUI4l8QKX&_r=1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-[#2aaac6] transition-colors"
+                >
+                  <BiLogoTiktok size={16} />
                 </a>
               </div>
 
               {/* Date (tablet and up) */}
-              <div className="hidden sm:flex items-center text-xs text-gray-500">
-                <Calendar className="mr-1.5 h-3.5 w-3.5" />
+              <div className="hidden md:flex items-center text-xs text-gray-500">
+                <BiCalendar className="mr-1.5 h-3.5 w-3.5" />
                 <span>{formattedDate}</span>
               </div>
             </div>
@@ -366,7 +378,7 @@ const Header: React.FC = () => {
             {/* Right - Weather & Account & Search */}
             <div className="flex items-center space-x-4">
               {/* Weather (tablet and up) */}
-              <div className="hidden sm:flex items-center text-xs text-gray-500">
+              <div className="hidden md:flex items-center text-xs text-gray-500">
                 {weather.loading ? (
                   <div className="flex items-center">
                     <Skeleton className="h-3.5 w-3.5 mr-1.5 rounded-full" />
@@ -374,7 +386,7 @@ const Header: React.FC = () => {
                   </div>
                 ) : weather.error ? (
                   <span className="flex items-center">
-                    <Cloud className="mr-1.5 h-3.5 w-3.5" />
+                    <BiCloud className="mr-1.5 h-3.5 w-3.5" />
                     Weather unavailable
                   </span>
                 ) : (
@@ -385,11 +397,11 @@ const Header: React.FC = () => {
                     <span className="hidden md:inline">
                       {getWeatherCondition(weather.weatherCode)}
                     </span>
-                    <Wind className="mx-1.5 h-3.5 w-3.5 text-gray-400 hidden md:inline-block" />
+                    <BiWind className="mx-1.5 h-3.5 w-3.5 text-gray-400 hidden md:inline-block" />
                     <span className="hidden md:inline">{Math.round(weather.windSpeed)} km/h</span>
                     {weather.location && (
                       <>
-                        <MapPin className="mx-1.5 h-3 w-3 text-gray-400 hidden md:inline-block" />
+                        <BiMapPin className="mx-1.5 h-3 w-3 text-gray-400 hidden md:inline-block" />
                         <span className="hidden md:inline">{weather.location}</span>
                       </>
                     )}
@@ -436,7 +448,7 @@ const Header: React.FC = () => {
                     className="text-gray-600 hover:text-red-500 -mr-2"
                     aria-label="Logout"
                   >
-                    <LogOut className="h-5 w-5" />
+                    <BiLogOut className="h-5 w-5" />
                   </Button>
                 </div>
               ) : (
@@ -445,14 +457,14 @@ const Header: React.FC = () => {
                     href="/login"
                     className="flex items-center text-xs text-gray-500 hover:text-[#2aaac6] transition-colors"
                   >
-                    <User size={16} className="mr-1" />
+                    <BiUser size={16} className="mr-1" />
                     <span className="hidden sm:inline">Login</span>
                   </Link>
                   <Link
                     href="/register"
                     className="hidden sm:flex items-center text-xs text-gray-500 hover:text-[#2aaac6] transition-colors"
                   >
-                    <UserPlus size={16} className="mr-1" />
+                    <BiUserPlus size={16} className="mr-1" />
                     <span className="hidden sm:inline">Register</span>
                   </Link>
                 </>
@@ -467,7 +479,7 @@ const Header: React.FC = () => {
                   className="text-gray-600 hover:text-[#2aaac6] -mr-2"
                   aria-label="Search"
                 >
-                  <Search className="h-5 w-5" />
+                  <BiSearch className="h-5 w-5" />
                 </Button>
               </div>
             </div>
@@ -517,7 +529,7 @@ const Header: React.FC = () => {
                   >
                     <Link href="/markets">
                       <span className="flex items-center">
-                        <Bitcoin className="w-4 h-4 mr-1" />
+                        <BiCoin className="w-4 h-4 mr-1" />
                         Markets
                       </span>
                     </Link>
@@ -530,9 +542,9 @@ const Header: React.FC = () => {
                         variant="ghost"
                         className="text-gray-700 hover:text-[#2aaac6] hover:bg-transparent rounded-md flex items-center gap-1"
                       >
-                        <GlobeIcon className="w-4 h-4 mr-1" />
+                        <BiGlobe className="w-4 h-4 mr-1" />
                         Countries
-                        <ChevronDown className="h-4 w-4 ml-1 opacity-50" />
+                        <BiChevronDown className="h-4 w-4 ml-1 opacity-50" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="min-w-[180px]">
@@ -603,16 +615,16 @@ const Header: React.FC = () => {
         <div className="lg:hidden border-t border-gray-200 bg-white fixed top-[55px] left-0 right-0 bottom-0 z-50 overflow-y-auto">
           <div className="container mx-auto px-4 py-4 pb-20">
             {/* Mobile menu header with social/date/weather/football */}
-            <div className="mb-4 pb-4 border-b border-gray-100">
+            <div className="mb-4 hidden pb-4 border-b border-gray-100">
               {/* Social Media */}
-              <div className="flex space-x-4 mb-3 sm:hidden">
+              <div className="hidden flex space-x-4 mb-3">
                 <a
                   href="https://twitter.com/dawanafrica"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-500 hover:text-[#2aaac6] transition-colors"
                 >
-                  <Twitter size={16} />
+                  <BiLogoTwitter size={16} />
                 </a>
                 <a
                   href="https://facebook.com/dawanafrica"
@@ -620,7 +632,7 @@ const Header: React.FC = () => {
                   rel="noopener noreferrer"
                   className="text-gray-500 hover:text-[#2aaac6] transition-colors"
                 >
-                  <Facebook size={16} />
+                  <BiLogoFacebook size={16} />
                 </a>
                 <a
                   href="https://instagram.com/dawanafrica"
@@ -628,18 +640,18 @@ const Header: React.FC = () => {
                   rel="noopener noreferrer"
                   className="text-gray-500 hover:text-[#2aaac6] transition-colors"
                 >
-                  <Instagram size={16} />
+                  <BiLogoInstagram size={16} />
                 </a>
               </div>
 
               {/* Date (mobile only) */}
-              <div className="sm:hidden flex items-center text-xs text-gray-500 mb-3">
-                <Calendar className="mr-1.5 h-3.5 w-3.5" />
+              <div className="hidden flex items-center text-xs text-gray-500 mb-3">
+                <BiCalendar className="mr-1.5 h-3.5 w-3.5" />
                 <span>{formattedDate}</span>
               </div>
 
               {/* Weather (mobile only) */}
-              <div className="sm:hidden flex items-center text-xs text-gray-500">
+              <div className="hidden flex items-center text-xs text-gray-500">
                 {weather.loading ? (
                   <div className="flex items-center">
                     <Skeleton className="h-3.5 w-3.5 mr-1.5 rounded-full" />
@@ -647,7 +659,7 @@ const Header: React.FC = () => {
                   </div>
                 ) : weather.error ? (
                   <span className="flex items-center">
-                    <Cloud className="mr-1.5 h-3.5 w-3.5" />
+                    <BiCloud className="mr-1.5 h-3.5 w-3.5" />
                     Weather unavailable
                   </span>
                 ) : (
@@ -657,12 +669,12 @@ const Header: React.FC = () => {
                     <span className="mx-1 text-gray-400">•</span>
                     <span>{getWeatherCondition(weather.weatherCode)}</span>
                     <div className="w-full h-1"></div>
-                    <Wind className="mr-1.5 h-3.5 w-3.5 text-gray-400" />
+                    <BiWind className="mr-1.5 h-3.5 w-3.5 text-gray-400" />
                     <span>{Math.round(weather.windSpeed)} km/h</span>
                     {weather.location && (
                       <>
                         <span className="mx-1 text-gray-400">•</span>
-                        <MapPin className="mr-1 h-3 w-3 text-gray-400" />
+                        <BiMapPin className="mr-1 h-3 w-3 text-gray-400" />
                         <span className="truncate">{weather.location}</span>
                       </>
                     )}
@@ -686,7 +698,7 @@ const Header: React.FC = () => {
                 className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6] flex items-center"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Bitcoin className="h-4 w-4 mr-2" />
+                <BiCoin className="h-4 w-4 mr-2" />
                 Markets
               </Link>
 
@@ -734,7 +746,7 @@ const Header: React.FC = () => {
                         setIsMenuOpen(false)
                       }}
                     >
-                      <LogOut className="h-5 w-5 mr-2" />
+                      <BiLogOut className="h-5 w-5 mr-2" />
                       Logout
                     </button>
                   </>

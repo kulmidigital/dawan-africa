@@ -180,10 +180,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Main featured article - left side (2/3 width on desktop) */}
           <div className="md:col-span-2">
             <Card className="group h-full overflow-hidden border-0 shadow-md sm:shadow-xl transition-all hover:shadow-2xl">
-              {/* Flash News integrated inside the Card */}
-              {recentPosts.length > 0 && (
-                <FlashNews currentFlashPost={currentFlashPost} formatTimeAgo={formatTimeAgo} />
-              )}
+              {/* Flash News integrated inside the Card - hidden on small screens */}
+              <div className="hidden md:block">
+                {recentPosts.length > 0 && (
+                  <FlashNews currentFlashPost={currentFlashPost} formatTimeAgo={formatTimeAgo} />
+                )}
+              </div>
 
               {/* Featured image with text overlay */}
               <FeaturedPostCard
