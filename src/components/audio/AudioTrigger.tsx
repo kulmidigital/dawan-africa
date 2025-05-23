@@ -21,8 +21,7 @@ export const AudioTrigger: React.FC<AudioTriggerProps> = ({
   children,
   showTitle = false,
 }) => {
-  const { currentTrack, isPlaying, setCurrentTrack, togglePlayPause, showPlayer, play } =
-    useAudioPlayer()
+  const { currentTrack, isPlaying, setCurrentTrack, togglePlayPause, showPlayer } = useAudioPlayer()
 
   const isCurrentTrack = currentTrack?.id === track.id
   const isCurrentlyPlaying = isCurrentTrack && isPlaying
@@ -32,13 +31,9 @@ export const AudioTrigger: React.FC<AudioTriggerProps> = ({
       // If it's the same track, just toggle play/pause
       togglePlayPause()
     } else {
-      // If it's a different track, set it as current, show player, and start playing
-      setCurrentTrack(track)
+      // If it's a different track, set it as current with auto-play, and show player
+      setCurrentTrack(track, true) // auto-play enabled
       showPlayer()
-      // Auto-play the new track after a brief delay to ensure it's loaded
-      setTimeout(() => {
-        play()
-      }, 100)
     }
   }
 

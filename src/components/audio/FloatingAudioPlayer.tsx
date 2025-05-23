@@ -33,6 +33,7 @@ export const FloatingAudioPlayer: React.FC = () => {
     toggleMinimize,
     hidePlayer,
     audioRef,
+    shouldAutoPlayRef,
     updateCurrentTime,
     updateDuration,
     setIsPlaying,
@@ -69,11 +70,24 @@ export const FloatingAudioPlayer: React.FC = () => {
       setIsPlaying(false)
     }
 
+    const handleCanPlay = async () => {
+      // Auto-play if requested
+      if (shouldAutoPlayRef.current) {
+        shouldAutoPlayRef.current = false // Reset the flag
+        try {
+          await audio.play()
+        } catch (error) {
+          console.error('Auto-play failed:', error)
+        }
+      }
+    }
+
     audio.addEventListener('timeupdate', handleTimeUpdate)
     audio.addEventListener('durationchange', handleDurationChange)
     audio.addEventListener('play', handlePlay)
     audio.addEventListener('pause', handlePause)
     audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('canplay', handleCanPlay)
 
     // Set the audio source
     audio.src = currentTrack.src
@@ -84,8 +98,9 @@ export const FloatingAudioPlayer: React.FC = () => {
       audio.removeEventListener('play', handlePlay)
       audio.removeEventListener('pause', handlePause)
       audio.removeEventListener('ended', handleEnded)
+      audio.removeEventListener('canplay', handleCanPlay)
     }
-  }, [currentTrack, audioRef, updateCurrentTime, updateDuration, setIsPlaying])
+  }, [currentTrack, audioRef, updateCurrentTime, updateDuration, setIsPlaying, shouldAutoPlayRef])
 
   // Format time helper
   const formatTime = (time: number): string => {

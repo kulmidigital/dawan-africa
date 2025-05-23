@@ -26,7 +26,7 @@ interface AudioPlayerContextType {
   isMinimized: boolean
 
   // Player controls
-  setCurrentTrack: (track: AudioTrack) => void
+  setCurrentTrack: (track: AudioTrack, autoPlay?: boolean) => void
   play: () => void
   pause: () => void
   togglePlayPause: () => void
@@ -41,6 +41,7 @@ interface AudioPlayerContextType {
 
   // Audio element ref
   audioRef: React.RefObject<HTMLAudioElement | null>
+  shouldAutoPlayRef: React.RefObject<boolean>
 
   // Update functions
   updateCurrentTime: (time: number) => void
@@ -73,12 +74,14 @@ export const AudioPlayerProvider: React.FC<AudioPlayerProviderProps> = ({ childr
   const [isMinimized, setIsMinimized] = useState(false)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const shouldAutoPlayRef = useRef<boolean>(false)
 
   const setCurrentTrack = useCallback(
-    (track: AudioTrack) => {
+    (track: AudioTrack, autoPlay?: boolean) => {
       setCurrentTrackState(track)
       setCurrentTime(0)
       setDuration(0)
+      shouldAutoPlayRef.current = !!autoPlay
       if (!isPlayerVisible) {
         setIsPlayerVisible(true)
       }
@@ -186,6 +189,7 @@ export const AudioPlayerProvider: React.FC<AudioPlayerProviderProps> = ({ childr
     hidePlayer,
     toggleMinimize,
     audioRef,
+    shouldAutoPlayRef,
     updateCurrentTime,
     updateDuration,
     setIsPlaying,
