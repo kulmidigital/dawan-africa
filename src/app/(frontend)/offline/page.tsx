@@ -24,11 +24,11 @@ export default function OfflinePage() {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">You're Offline</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">You&apos;re Offline</h1>
 
         {/* Description */}
         <p className="text-gray-600 mb-6 leading-relaxed">
-          It looks like you're not connected to the internet. Some content may not be available
+          It looks like you&apos;re not connected to the internet. Some content may not be available
           right now.
         </p>
 
@@ -74,8 +74,8 @@ export default function OfflinePage() {
         {/* Additional Info */}
         <div className="mt-8 pt-6 border-t border-gray-200">
           <p className="text-sm text-gray-500">
-            When you're back online, you'll have access to the latest news and updates from Dawan
-            Africa.
+            When you&apos;re back online, you&apos;ll have access to the latest news and updates from
+            Dawan Africa.
           </p>
         </div>
 
