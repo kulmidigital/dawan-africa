@@ -2,17 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Metadata } from 'next'
 import { BiWifi, BiRefresh, BiHome, BiNews } from 'react-icons/bi'
 
-export const metadata: Metadata = {
-  title: 'Offline - Dawan Africa',
-  description: 'You are currently offline. Please check your internet connection.',
-  robots: {
-    index: false,
-    follow: false,
-  },
-}
+
 
 export default function OfflinePage() {
   return (
