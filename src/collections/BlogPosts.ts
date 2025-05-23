@@ -34,7 +34,7 @@ export const BlogPost: CollectionConfig = {
       hooks: {
         beforeValidate: [
           ({ value, data }) => {
-            return data?.title ? slugify(data.title, { lower: true, strict: true }) : value
+            return data?.name ? slugify(data.name, { lower: true, strict: true }) : value
           },
         ],
       },

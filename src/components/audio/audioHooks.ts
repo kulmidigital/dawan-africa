@@ -1,27 +1,45 @@
 import { CollectionAfterChangeHook, CollectionBeforeDeleteHook } from 'payload'
-import { generateAudioForPost, deleteAudioFromUploadthing } from './audioUtils'
+import { deleteAudioFromUploadthing } from './audioUtils'
 
-// Hook to generate audio after a blog post is created or updated
+// Simple in-memory lock to prevent concurrent audio generation for the same post
+const audioGenerationLocks = new Set<string>()
+
+// Simple hook that triggers audio generation via API call (no transaction conflicts)
 export const generateAudioAfterChange: CollectionAfterChangeHook = async ({
   doc,
-  req,
   previousDoc,
   operation,
+  context,
 }) => {
-  // Only process if the environment variables are set up for audio generation
+  console.log('\n🔧 [AUDIO HOOK] Audio generation hook triggered!')
+  console.log(`🔧 [AUDIO HOOK] Operation: ${operation}`)
+  console.log(`🔧 [AUDIO HOOK] Post ID: ${doc.id}`)
+  console.log(`🔧 [AUDIO HOOK] Post Name: "${doc.name}"`)
+
+  // Check context flag to prevent infinite loops (if API call somehow triggers this)
+  if (context?.triggerAfterChange === false) {
+    console.log('⏭️ [AUDIO HOOK] Skipping audio generation (triggerAfterChange flag set to false)')
+    return doc
+  }
+
+  // Check if audio generation is already in progress for this post
+  if (audioGenerationLocks.has(doc.id)) {
+    console.log('⏭️ [AUDIO HOOK] Skipping audio generation (already in progress for this post)')
+    return doc
+  }
+
+  // Check environment variables
   if (
     !process.env.GOOGLE_APPLICATION_PROJECT_ID ||
     !process.env.GOOGLE_CLIENT_EMAIL ||
     !process.env.GOOGLE_APPLICATION_PRIVATE_KEY ||
-    !process.env.UPLOADTHING_SECRET
+    !process.env.UPLOADTHING_TOKEN
   ) {
-    console.log('Audio generation skipped: missing environment variables')
+    console.log('❌ [AUDIO HOOK] Audio generation skipped: missing environment variables')
     return doc
   }
 
   try {
-    console.log(`\nAudio generation triggered for post "${doc.name}" (${operation})`)
-
     // Check if content has changed (for updates) or if this is a new post
     const contentChanged =
       operation === 'create' ||
@@ -30,62 +48,106 @@ export const generateAudioAfterChange: CollectionAfterChangeHook = async ({
       JSON.stringify(doc.layout) !== JSON.stringify(previousDoc.layout)
 
     if (!contentChanged) {
-      console.log('No content changes detected, skipping audio generation')
+      console.log('⏭️ [AUDIO HOOK] No content changes detected, skipping audio generation')
       return doc
     }
 
+    console.log('✅ [AUDIO HOOK] Content changes detected, proceeding with audio generation...')
+
+    // Add lock to prevent concurrent generation
+    audioGenerationLocks.add(doc.id)
+    console.log('🔒 [AUDIO HOOK] Added lock for post ID:', doc.id)
+
     // If this is an update and there's an existing audio file, delete it
     if (operation === 'update' && previousDoc?.audioUrl) {
-      console.log('Deleting previous audio file...')
-      await deleteAudioFromUploadthing(previousDoc.audioUrl)
-    }
-
-    // Generate new audio
-    const audioUrl = await generateAudioForPost({
-      id: doc.id,
-      name: doc.name,
-      slug: doc.slug,
-      layout: doc.layout,
-      audioUrl: doc.audioUrl,
-    })
-
-    if (audioUrl) {
-      // Update the document with the new audio URL
-      const updatedDoc = await req.payload.update({
-        collection: 'blogPosts',
-        id: doc.id,
-        data: { audioUrl },
-        depth: 0, // Don't need deep population for this update
-      })
-
-      console.log(`✅ Audio generation completed for post "${doc.name}"`)
-      return { ...doc, audioUrl }
-    } else {
-      console.log(`⚠️ No audio generated for post "${doc.name}" (likely no content)`)
-
-      // If there was previous audio but no new content, clear the audioUrl
-      if (previousDoc?.audioUrl) {
-        await req.payload.update({
-          collection: 'blogPosts',
-          id: doc.id,
-          data: { audioUrl: null },
-          depth: 0,
-        })
-        return { ...doc, audioUrl: null }
+      console.log('🗑️ [AUDIO HOOK] Deleting previous audio file...')
+      try {
+        await deleteAudioFromUploadthing(previousDoc.audioUrl)
+        console.log('✅ [AUDIO HOOK] Previous audio file deleted successfully')
+      } catch (deleteError) {
+        console.error('❌ [AUDIO HOOK] Error deleting previous audio file:', deleteError)
       }
     }
-  } catch (error) {
-    // Log the error but don't fail the entire operation
-    console.error(
-      `❌ Audio generation failed for post "${doc.name}": ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    )
 
-    // Optionally, you could set a flag or send a notification about the failure
-    // For now, we'll just continue without audio
+    // Trigger audio generation via API call (fire and forget - no waiting)
+    console.log('🚀 [AUDIO HOOK] Triggering async audio generation via API...')
+
+    // Get the base URL for the API call - use localhost for development
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    const baseUrl = isDevelopment
+      ? 'http://localhost:3000'
+      : process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000'
+    const apiUrl = `${baseUrl}/api/generate-audio/${doc.id}`
+
+    console.log(`🌐 [AUDIO HOOK] API URL: ${apiUrl}`)
+
+    // Fire and forget - don't wait for the response to avoid transaction issues
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Add timeout to prevent hanging
+      signal: AbortSignal.timeout(5 * 60 * 1000), // 5 minute timeout
+    })
+      .then(async (response) => {
+        if (response.ok) {
+          const result = await response.json()
+          console.log(`✅ [AUDIO HOOK] Audio generation API call successful for post "${doc.name}"`)
+          console.log(`✅ [AUDIO HOOK] Result:`, result)
+
+          if (result.duration) {
+            console.log(`⏱️ [AUDIO HOOK] Audio generation took ${result.duration}ms`)
+          }
+        } else {
+          console.error(
+            `❌ [AUDIO HOOK] Audio generation API call failed:`,
+            response.status,
+            response.statusText,
+          )
+
+          // Try to parse error response
+          try {
+            const errorData = await response.json()
+            console.error(`❌ [AUDIO HOOK] Error details:`, errorData)
+
+            if (response.status === 408) {
+              console.error(
+                `⏰ [AUDIO HOOK] Request timed out - this is expected for long audio generation`,
+              )
+            }
+          } catch (parseError) {
+            console.error(`❌ [AUDIO HOOK] Could not parse error response`)
+          }
+        }
+      })
+      .catch((error) => {
+        console.error(`❌ [AUDIO HOOK] Error calling audio generation API:`, error)
+
+        // Provide more specific error handling
+        if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+          console.error(
+            `⏰ [AUDIO HOOK] API call timed out - this is expected for complex audio generation`,
+          )
+        } else if (error.name === 'TypeError' && error.message?.includes('fetch failed')) {
+          console.error(`🌐 [AUDIO HOOK] Network error - server may be overloaded or unreachable`)
+        }
+      })
+      .finally(() => {
+        // Remove lock when done (success or failure)
+        audioGenerationLocks.delete(doc.id)
+        console.log('🔓 [AUDIO HOOK] Removed lock for post ID:', doc.id)
+      })
+
+    console.log('🎉 [AUDIO HOOK] Audio generation API call triggered successfully (async)')
+  } catch (error) {
+    console.error('\n❌ [AUDIO HOOK] Error in audio generation hook:', error)
+    // Remove lock on error
+    audioGenerationLocks.delete(doc.id)
+    console.log('🔓 [AUDIO HOOK] Removed lock for post ID (error):', doc.id)
   }
 
+  console.log('🔚 [AUDIO HOOK] Hook completed (audio generation running in background)')
   return doc
 }
 
@@ -112,5 +174,5 @@ export const deleteAudioBeforeDelete: CollectionBeforeDeleteHook = async ({ req,
     )
   }
 
-  return true // Allow the deletion to proceed
+  return true 
 }
