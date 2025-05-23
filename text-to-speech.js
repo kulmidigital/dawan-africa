@@ -32,10 +32,10 @@ export async function generateAudioFromText(textToSynthesize) {
   }
 
   try {
-    // Performs the text-to-speech request
-    const [response] = await client.synthesizeSpeech(request)
+  // Performs the text-to-speech request
+  const [response] = await client.synthesizeSpeech(request)
 
-    // Save the generated binary audio content to a local file
+  // Save the generated binary audio content to a local file
     // await writeFile('output.wav', response.audioContent, 'binary')
     // console.log('Audio content written to file: output.wav')
     return response.audioContent // Return the audio content buffer

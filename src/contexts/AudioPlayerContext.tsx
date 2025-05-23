@@ -40,7 +40,7 @@ interface AudioPlayerContextType {
   toggleMinimize: () => void
 
   // Audio element ref
-  audioRef: React.RefObject<HTMLAudioElement>
+  audioRef: React.RefObject<HTMLAudioElement | null>
 
   // Update functions
   updateCurrentTime: (time: number) => void
@@ -72,7 +72,7 @@ export const AudioPlayerProvider: React.FC<AudioPlayerProviderProps> = ({ childr
   const [isPlayerVisible, setIsPlayerVisible] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
 
-  const audioRef = useRef<HTMLAudioElement>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const setCurrentTrack = useCallback(
     (track: AudioTrack) => {

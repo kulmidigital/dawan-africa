@@ -4,11 +4,16 @@ import { Cover } from '../blocks/cover/schema.ts'
 import { Image } from '../blocks/image/schema.ts'
 import slugify from 'slugify'
 import { ObjectId } from 'mongodb'
+import { generateAudioAfterChange, deleteAudioBeforeDelete } from '../components/audio/audioHooks'
 
 export const BlogPost: CollectionConfig = {
   slug: 'blogPosts',
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterChange: [generateAudioAfterChange],
+    beforeDelete: [deleteAudioBeforeDelete],
   },
   fields: [
     {
