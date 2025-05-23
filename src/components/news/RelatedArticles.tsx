@@ -1,6 +1,4 @@
-'use client'
-
-import React, { useMemo } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import { BlogPost } from '@/payload-types'
 import Image from 'next/image'
@@ -13,7 +11,7 @@ interface RelatedArticlesProps {
 
 export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, currentPostId }) => {
   // Filter out current post and shuffle the remaining posts deterministically
-  const filteredPosts = useMemo(() => {
+  const getFilteredPosts = () => {
     // First filter out the current post
     const filtered = currentPostId ? posts.filter((post) => post.id !== currentPostId) : [...posts]
 
@@ -29,7 +27,9 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, current
 
     // Return at most 6 posts
     return shuffled.slice(0, 6)
-  }, [posts, currentPostId])
+  }
+
+  const filteredPosts = getFilteredPosts()
 
   if (!filteredPosts || filteredPosts.length === 0) {
     return null // Don't render anything if there are no related posts

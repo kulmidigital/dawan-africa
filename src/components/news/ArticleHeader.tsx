@@ -1,6 +1,4 @@
-'use client'
-
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Image from 'next/image'
 import { BlogPost } from '@/payload-types'
 import { format } from 'date-fns'
@@ -8,15 +6,14 @@ import { CalendarDays, Clock, UserCircle } from 'lucide-react'
 
 // Import utility functions
 import { getAuthorDisplayName, getPostImageFromLayout } from '@/utils/postUtils'
-import { SharePopover } from './SharePopover'
+import { SharePopoverClient } from './SharePopoverClient'
 
 interface ArticleHeaderProps {
   post: BlogPost
+  currentUrl: string
 }
 
-export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
-  const [currentUrl, setCurrentUrl] = useState<string>('')
-
+export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post, currentUrl }) => {
   const authorName = getAuthorDisplayName(post.author)
   const publishedDate = format(new Date(post.createdAt), 'MMMM d, yyyy')
   // Basic reading time estimate, can be enhanced
@@ -42,13 +39,6 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
   const readingTime = Math.ceil(wordCount / 200)
 
   const coverImageUrl = getPostImageFromLayout(post.layout)
-
-  // Set the URL after component mounts on client
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setCurrentUrl(window.location.href)
-    }
-  }, [])
 
   return (
     <header>
@@ -106,7 +96,7 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post }) => {
 
       {/* Floating share button - shown on all screen sizes */}
       <div className="fixed right-4 sm:right-8 top-24 sm:top-32 z-50">
-        <SharePopover
+        <SharePopoverClient
           title={post.name}
           url={currentUrl}
           buttonVariant="outline"

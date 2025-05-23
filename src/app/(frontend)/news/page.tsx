@@ -51,7 +51,7 @@ const NewsPageSkeleton = () => {
   )
 }
 
-export default async function NewsPage({ searchParams }: NewsPageProps) {
+export default async function NewsPage({ searchParams }: Readonly <NewsPageProps>) {
   const resolvedSearchParams = searchParams ? await searchParams : {}
 
   return (

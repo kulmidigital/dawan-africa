@@ -1,0 +1,175 @@
+/* Custom styles for react-h5-audio-player */
+
+/* Override default theme with brand colors */
+.rhap_container {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* Main controls styling */
+.rhap_main-controls {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 12px !important;
+}
+
+/* Play/Pause button styling */
+.rhap_main-controls-button {
+  color: #2aaac6 !important;
+  font-size: 24px !important;
+  width: 48px !important;
+  height: 48px !important;
+  background-color: white !important;
+  border: 2px solid #2aaac6 !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease !important;
+  margin: 0 8px !important;
+}
+
+.rhap_main-controls-button:hover {
+  background-color: #2aaac6 !important;
+  color: white !important;
+  transform: scale(1.05) !important;
+}
+
+/* Jump controls styling */
+.rhap_rewind-button,
+.rhap_forward-button {
+  color: #6b7280 !important;
+  font-size: 20px !important;
+  background: none !important;
+  border: none !important;
+  padding: 8px !important;
+  margin: 0 4px !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.rhap_rewind-button:hover,
+.rhap_forward-button:hover {
+  color: #2aaac6 !important;
+  background-color: rgba(42, 170, 198, 0.1) !important;
+}
+
+/* Progress bar section */
+.rhap_progress-section {
+  display: flex !important;
+  align-items: center !important;
+  margin: 12px 0 !important;
+}
+
+/* Progress bar container */
+.rhap_progress-container {
+  flex: 1 !important;
+  margin: 0 16px !important;
+  height: 6px !important;
+  background-color: #e5e7eb !important;
+  border-radius: 3px !important;
+  cursor: pointer !important;
+}
+
+/* Progress bar indicator */
+.rhap_progress-indicator {
+  background-color: #2aaac6 !important;
+  height: 100% !important;
+  border-radius: 3px !important;
+  transition: all 0.1s ease !important;
+}
+
+/* Download progress */
+.rhap_download-progress {
+  background-color: rgba(42, 170, 198, 0.3) !important;
+  height: 100% !important;
+  border-radius: 3px !important;
+}
+
+/* Time display */
+.rhap_time {
+  color: #374151 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif !important;
+  min-width: 45px !important;
+  text-align: center !important;
+}
+
+/* Volume controls */
+.rhap_volume-controls {
+  display: flex !important;
+  align-items: center !important;
+  margin-top: 8px !important;
+}
+
+.rhap_volume-button {
+  color: #6b7280 !important;
+  font-size: 18px !important;
+  background: none !important;
+  border: none !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  margin-right: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.rhap_volume-button:hover {
+  color: #2aaac6 !important;
+  background-color: rgba(42, 170, 198, 0.1) !important;
+}
+
+/* Volume bar */
+.rhap_volume-bar-area {
+  flex: 1 !important;
+  max-width: 100px !important;
+  height: 4px !important;
+  background-color: #e5e7eb !important;
+  border-radius: 2px !important;
+  cursor: pointer !important;
+}
+
+.rhap_volume-indicator {
+  background-color: #2aaac6 !important;
+  height: 100% !important;
+  border-radius: 2px !important;
+}
+
+/* Header styling */
+.rhap_header {
+  margin-bottom: 8px !important;
+}
+
+/* Additional status-based styling */
+.rhap_play-status--playing .rhap_progress-indicator {
+  background-color: #2aaac6 !important;
+  box-shadow: 0 0 8px rgba(42, 170, 198, 0.3) !important;
+}
+
+.rhap_play-status--paused .rhap_progress-indicator {
+  background-color: #6b7280 !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .rhap_main-controls-button {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 20px !important;
+  }
+
+  .rhap_time {
+    font-size: 12px !important;
+    min-width: 40px !important;
+  }
+
+  .rhap_volume-controls {
+    margin-top: 12px !important;
+  }
+
+  .rhap_volume-bar-area {
+    max-width: 80px !important;
+  }
+}

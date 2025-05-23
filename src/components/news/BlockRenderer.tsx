@@ -1,9 +1,8 @@
-'use client'
-
 import React from 'react'
 import Image from 'next/image'
 import { Media } from '@/payload-types'
 import { ExternalLink, FileText, Quote } from 'lucide-react'
+import { CopyButton } from './CopyButton'
 
 interface BlockRendererProps {
   block: any // Using 'any' for now, should be replaced with specific block types
@@ -167,6 +166,7 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
                 </blockquote>
               )
             case 'code':
+              const codeText = node.children.map((textNode: any) => textNode.text).join('\n')
               return (
                 <div key={index} className="my-6">
                   <div className="flex items-center justify-between bg-gray-800 text-gray-200 px-4 py-2 text-sm rounded-t-md">
@@ -174,19 +174,10 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
                       <FileText className="h-4 w-4 mr-2" />
                       <span>Code</span>
                     </div>
-                    <button
-                      className="text-gray-400 hover:text-white transition-colors"
-                      onClick={() =>
-                        navigator.clipboard.writeText(
-                          node.children.map((textNode: any) => textNode.text).join('\n'),
-                        )
-                      }
-                    >
-                      Copy
-                    </button>
+                    <CopyButton text={codeText} />
                   </div>
                   <pre className="bg-gray-900 p-4 rounded-b-md overflow-auto text-gray-100">
-                    <code>{node.children.map((textNode: any) => textNode.text).join('\n')}</code>
+                    <code>{codeText}</code>
                   </pre>
                 </div>
               )
@@ -262,11 +253,11 @@ const ImageBlock: React.FC<{ image: Media | string | null; altText?: string }> =
   return (
     <figure className="my-8">
       <div className="rounded-lg overflow-hidden shadow-lg transition-transform hover:scale-[1.01] duration-300">
-      <Image
-        src={imageUrl}
-        alt={alt}
-        width={imageObj?.width ?? 1200}
-        height={imageObj?.height ?? 800}
+        <Image
+          src={imageUrl}
+          alt={alt}
+          width={imageObj?.width ?? 1200}
+          height={imageObj?.height ?? 800}
           className="w-full h-auto object-contain max-h-[500px] sm:max-h-[600px] md:max-h-[700px]"
         />
       </div>
@@ -303,9 +294,9 @@ const CoverBlock: React.FC<{
       {imageUrl ? (
         // With image
         <>
-        <Image
-          src={imageUrl}
-          alt={headingText}
+          <Image
+            src={imageUrl}
+            alt={headingText}
             fill
             className="object-cover"
             priority
@@ -318,18 +309,18 @@ const CoverBlock: React.FC<{
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-800"></div>
       )}
 
-        {!hideTextOverlay && (
+      {!hideTextOverlay && (
         <div className="relative z-10 flex flex-col justify-center items-center text-center h-full p-6 sm:p-10 md:p-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 max-w-3xl drop-shadow-md">
-              {headingText}
-            </h2>
-            {subheading && (
+            {headingText}
+          </h2>
+          {subheading && (
             <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-2xl font-light drop-shadow-sm">
-                {subheading}
-              </p>
-            )}
+              {subheading}
+            </p>
+          )}
         </div>
-        )}
+      )}
 
       {/* Visual elements */}
       <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-r from-white/0 via-white/10 to-white/0"></div>

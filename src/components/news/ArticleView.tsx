@@ -11,6 +11,8 @@ import { RelatedArticles } from './RelatedArticles'
 import { updateUserAndPostEngagement } from '@/utils/engagementApi'
 import { getRelatedPostsForView } from '@/utils/relatedPostsApi'
 import { SharePopover } from './SharePopover'
+import { AudioTrigger } from '@/components/audio/AudioTrigger'
+import type { AudioTrack } from '@/contexts/AudioPlayerContext'
 
 // Use the original types from payload-types
 type BlogPost = PayloadBlogPost
@@ -233,7 +235,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
   return (
     <div className="bg-white min-h-screen">
       {/* Header Section */}
-      <ArticleHeader post={post} />
+      <ArticleHeader post={post} currentUrl={currentUrl} />
 
       <article className="relative">
         {/* Article Content Container */}
@@ -242,13 +244,33 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
             {/* Audio Player Section */}
             {post.audioUrl && (
               <div className="mb-6 sm:mb-8">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   Listen to this article:
                 </h3>
-                <audio controls className="w-full">
-                  <source src={post.audioUrl} type="audio/wav" />
-                  Your browser does not support the audio element.
-                </audio>
+                <div className="bg-gray-50 rounded-lg p-6 text-center">
+                  <div className="mb-4">
+                    <h4 className="font-medium text-gray-900 mb-2">{post.name}</h4>
+                    <p className="text-sm text-gray-600">Audio version of this article</p>
+                  </div>
+                  <AudioTrigger
+                    track={
+                      {
+                        id: post.id,
+                        title: post.name,
+                        src: post.audioUrl,
+                        articleSlug: post.slug,
+                      } as AudioTrack
+                    }
+                    variant="button"
+                    size="lg"
+                    className="mx-auto"
+                  >
+                    🎧 Listen to Article
+                  </AudioTrigger>
+                  <p className="text-xs text-gray-500 mt-3">
+                    Audio will continue playing as you browse other pages
+                  </p>
+                </div>
               </div>
             )}
 

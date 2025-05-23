@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { BlogPost } from '@/payload-types'
-import { ArticleView } from '@/components/news/ArticleView'
+import { ArticleServerView } from './ArticleServerView'
 
 interface ArticleClientViewProps {
   post: BlogPost
@@ -10,6 +10,8 @@ interface ArticleClientViewProps {
 }
 
 export const ArticleClientView: React.FC<ArticleClientViewProps> = ({ post, relatedPosts }) => {
+  const [currentUrl, setCurrentUrl] = useState('')
+
   useEffect(() => {
     let isMounted = true
 
@@ -43,7 +45,12 @@ export const ArticleClientView: React.FC<ArticleClientViewProps> = ({ post, rela
       }
     }
 
-    // Call the function
+    // Set current URL for sharing - this will update after initial render
+    if (typeof window !== 'undefined') {
+      setCurrentUrl(window.location.href)
+    }
+
+    // Call the view increment function
     incrementViewCount()
 
     // Cleanup function to prevent state updates if component unmounts
@@ -52,6 +59,6 @@ export const ArticleClientView: React.FC<ArticleClientViewProps> = ({ post, rela
     }
   }, [post?.id]) // Only depend on post.id, not the entire post object
 
-  // Render the actual article display component
-  return <ArticleView post={post} relatedPosts={relatedPosts} />
+  // Render immediately with currentUrl (will be empty initially, then update)
+  return <ArticleServerView post={post} relatedPosts={relatedPosts} currentUrl={currentUrl} />
 }

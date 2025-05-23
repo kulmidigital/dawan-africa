@@ -1,11 +1,14 @@
 import React, { Suspense } from 'react'
 import '../global.css'
+import '@/styles/audio-player.css'
 import HeaderServer from '@/components/layout/HeaderServer'
 import Footer from '@/components/layout/Footer'
 import { Source_Sans_3 } from 'next/font/google'
 import { AuthProvider } from '@/hooks/useAuth'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import { NavigationProvider } from '@/providers/NavigationProvider'
+import { AudioPlayerProvider } from '@/contexts/AudioPlayerContext'
+import { FloatingAudioPlayer } from '@/components/audio/FloatingAudioPlayer'
 import { Toaster } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Loading } from '@/components/global/Loading'
@@ -33,10 +36,13 @@ export default function RootLayout({ children }: { readonly children: React.Reac
           <AuthProvider>
             <QueryProvider>
               <NavigationProvider>
-                <Toaster richColors position="top-right" />
-                <HeaderServer />
-                <main className="flex-grow">{children}</main>
-                <Footer />
+                <AudioPlayerProvider>
+                  <Toaster richColors position="top-right" />
+                  <HeaderServer />
+                  <main className="flex-grow">{children}</main>
+                  <Footer />
+                  <FloatingAudioPlayer />
+                </AudioPlayerProvider>
               </NavigationProvider>
             </QueryProvider>
           </AuthProvider>
