@@ -2,21 +2,7 @@ import React, { Suspense } from 'react'
 import { NewsList } from '@/components/news/NewsList'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  title: 'Latest News | Dawan Africa',
-  description: 'Stay updated with the latest news, articles, and insights from Dawan Africa.',
-  openGraph: {
-    title: 'Latest News | Dawan Africa',
-    description: 'Stay updated with the latest news, articles, and insights from Dawan Africa.',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Latest News | Dawan Africa',
-    description: 'Stay updated with the latest news, articles, and insights from Dawan Africa.',
-  },
-}
+import { generateNewsListingMetadata, SITE_CONFIG } from '@/lib/seo'
 
 interface NewsPageProps {
   searchParams?: Promise<{
@@ -24,6 +10,24 @@ interface NewsPageProps {
     page?: string
     sort?: string
   }>
+}
+
+// Generate dynamic metadata for news page
+export async function generateMetadata({ searchParams }: NewsPageProps): Promise<Metadata> {
+  const resolvedParams = searchParams ? await searchParams : {}
+  const searchTerm = resolvedParams.search
+  const page = parseInt(resolvedParams.page ?? '1', 10)
+
+  // Build the current URL with search parameters
+  const url = new URL(`${SITE_CONFIG.url}/news`)
+  if (searchTerm) url.searchParams.set('search', searchTerm)
+  if (page > 1) url.searchParams.set('page', page.toString())
+
+  return generateNewsListingMetadata({
+    currentUrl: url.toString(),
+    page,
+    searchTerm,
+  })
 }
 
 // Define a skeleton component for the fallback
@@ -51,7 +55,7 @@ const NewsPageSkeleton = () => {
   )
 }
 
-export default async function NewsPage({ searchParams }: Readonly <NewsPageProps>) {
+export default async function NewsPage({ searchParams }: Readonly<NewsPageProps>) {
   const resolvedSearchParams = searchParams ? await searchParams : {}
 
   return (

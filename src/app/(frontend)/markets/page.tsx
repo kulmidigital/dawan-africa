@@ -2,11 +2,15 @@ import React from 'react'
 import { Metadata } from 'next'
 import { CryptoMarketsServer } from '@/components/markets/CryptoMarketsServer'
 import { getGlobalMarketData, getTrendingCoins, getMarketListings } from '@/lib/market-data'
+import { generateMarketsMetadata, SITE_CONFIG } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Cryptocurrency Markets | Dawan Africa',
-  description:
-    'Explore real-time cryptocurrency prices, market caps, and trading volumes on Dawan Africa.',
+// Generate dynamic metadata for markets page
+export async function generateMetadata(): Promise<Metadata> {
+  const currentUrl = `${SITE_CONFIG.url}/markets`
+
+  return generateMarketsMetadata({
+    currentUrl,
+  })
 }
 
 // Enable revalidation every 30 seconds for the entire page
@@ -20,7 +24,7 @@ interface MarketPageProps {
   }>
 }
 
-export default async function MarketsPage({ searchParams }: Readonly <MarketPageProps>) {
+export default async function MarketsPage({ searchParams }: Readonly<MarketPageProps>) {
   // Await searchParams as it's now a Promise in Next.js 15
   const params = await searchParams
   const page = parseInt(params.page ?? '1', 10)

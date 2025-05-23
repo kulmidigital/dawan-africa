@@ -4,8 +4,8 @@ import config from '@/payload.config'
 import { BlogPost, BlogCategory } from '@/payload-types'
 import { notFound } from 'next/navigation'
 import type { Metadata, ResolvingMetadata } from 'next'
-import { getPostImageFromLayout, getPostExcerpt } from '@/utils/postUtils'
 import { ArticleClientView } from '@/components/news/ArticleClientView'
+import { generateArticleMetadata, generateArticleJsonLd, SITE_CONFIG } from '@/lib/seo'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -75,57 +75,19 @@ export async function generateMetadata(
     return {
       title: 'Article Not Found',
       description: 'The article you are looking for does not exist.',
+      robots: {
+        index: false,
+        follow: false,
+      },
     }
   }
 
-  const parentMetadata = await parent
-  const parentTitle = parentMetadata.title?.absolute ?? 'Dawan Africa'
-  const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000'
+  const currentUrl = `${SITE_CONFIG.url}/news/${post.slug}`
 
-  // Get post description with length limit for metadata
-  const postDescription = getPostExcerpt(post, { maxLength: 160 })
-
-  // Get cover image URL from post layout
-  const coverImageUrl = getPostImageFromLayout(post.layout)
-
-  // Ensure we have an absolute URL for the image
-  const ogImage = coverImageUrl
-    ? coverImageUrl.startsWith('http')
-      ? coverImageUrl
-      : `${siteUrl}${coverImageUrl}`
-    : `${siteUrl}/placeholder-og-image.png`
-
-  // Get author name if available
-  const authorName =
-    typeof post.author === 'object' && post.author?.name ? post.author.name : 'Dawan Africa'
-
-  return {
-    title: `${post.name} | ${parentTitle}`,
-    description: postDescription,
-    openGraph: {
-      title: post.name,
-      description: postDescription,
-      url: `${siteUrl}/news/${post.slug}`,
-      siteName: parentMetadata.openGraph?.siteName ?? 'Dawan Africa',
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: post.name,
-        },
-      ],
-      type: 'article',
-      publishedTime: post.createdAt,
-      authors: [authorName],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: post.name,
-      description: postDescription,
-      images: [ogImage],
-    },
-  }
+  return generateArticleMetadata({
+    post,
+    currentUrl,
+  })
 }
 
 export default async function NewsArticlePage({
@@ -155,8 +117,22 @@ export default async function NewsArticlePage({
     }
   }
 
+  // Generate JSON-LD structured data
+  const currentUrl = `${SITE_CONFIG.url}/news/${post.slug}`
+  const articleJsonLd = generateArticleJsonLd({
+    post,
+    currentUrl,
+  })
+
   return (
     <main className="bg-gray-50 min-h-screen">
+      {/* JSON-LD structured data for the article */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleJsonLd),
+        }}
+      />
       <ArticleClientView post={post} relatedPosts={relatedPosts} />
     </main>
   )

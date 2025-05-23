@@ -1,0 +1,28 @@
+{
+  "name": "Dawan Africa - Uncovering the Continent",
+  "short_name": "Dawan Africa",
+  "description": "Uncovering the Continent — Through Its Own Lens. Stay updated with the latest African news, insights, and perspectives.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2aaac6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["news", "journalism", "africa", "politics", "business"],
+  "lang": "en",
+  "dir": "ltr"
+}

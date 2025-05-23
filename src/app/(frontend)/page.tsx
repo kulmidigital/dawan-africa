@@ -6,6 +6,30 @@ import { FeaturedPosts } from '@/components/home/FeaturedPosts'
 import { CategorySection } from '@/components/home/CategorySection'
 import { BlogPost, BlogCategory } from '@/payload-types'
 import { subDays } from 'date-fns'
+import { generateHomepageMetadata, SITE_CONFIG } from '@/lib/seo'
+import type { Metadata } from 'next'
+
+// Generate dynamic metadata for homepage
+export async function generateMetadata(): Promise<Metadata> {
+  const payloadConfig = await config
+  const payload = await getPayload({ config: payloadConfig })
+
+  // Fetch the latest post to potentially use its image
+  const latestPostResponse = await payload.find({
+    collection: 'blogPosts',
+    limit: 1,
+    sort: '-createdAt',
+    depth: 2,
+  })
+
+  const latestPost = latestPostResponse.docs[0] || null
+  const currentUrl = SITE_CONFIG.url
+
+  return generateHomepageMetadata({
+    currentUrl,
+    featuredPost: latestPost,
+  })
+}
 
 export default async function HomePage() {
   const payloadConfig = await config
