@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
 import { Metadata } from 'next'
@@ -74,8 +76,8 @@ export default function OfflinePage() {
         {/* Additional Info */}
         <div className="mt-8 pt-6 border-t border-gray-200">
           <p className="text-sm text-gray-500">
-            When you&apos;re back online, you&apos;ll have access to the latest news and updates from
-            Dawan Africa.
+            When you&apos;re back online, you&apos;ll have access to the latest news and updates
+            from Dawan Africa.
           </p>
         </div>
 
