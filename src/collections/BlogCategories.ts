@@ -15,5 +15,14 @@ export const BlogCategories: CollectionConfig = {
       label: 'Name',
       required: true,
     },
+    {
+      name: 'slug',
+      type: 'text',
+      label: 'Slug',
+      required: true,
+      admin: {
+        position: 'sidebar',
+      }
+    },
   ],
 }

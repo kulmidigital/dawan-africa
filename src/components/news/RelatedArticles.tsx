@@ -12,19 +12,23 @@ interface RelatedArticlesProps {
 }
 
 export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, currentPostId }) => {
-  // Filter out current post and shuffle the remaining posts
+  // Filter out current post and shuffle the remaining posts deterministically
   const filteredPosts = useMemo(() => {
     // First filter out the current post
     const filtered = currentPostId ? posts.filter((post) => post.id !== currentPostId) : [...posts]
 
-    // Then shuffle the array (Fisher-Yates algorithm)
-    for (let i = filtered.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[filtered[i], filtered[j]] = [filtered[j], filtered[i]]
-    }
+    // Use a deterministic shuffle based on post IDs to ensure consistent order
+    // between server and client renders
+    const seeded = filtered.map((post, index) => ({
+      post,
+      sort: parseInt(post.id.slice(-8), 16) + index, // Use last 8 chars of ID as seed
+    }))
+
+    seeded.sort((a, b) => a.sort - b.sort)
+    const shuffled = seeded.map((item) => item.post)
 
     // Return at most 6 posts
-    return filtered.slice(0, 6)
+    return shuffled.slice(0, 6)
   }, [posts, currentPostId])
 
   if (!filteredPosts || filteredPosts.length === 0) {

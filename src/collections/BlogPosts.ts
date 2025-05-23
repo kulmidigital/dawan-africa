@@ -97,6 +97,16 @@ export const BlogPost: CollectionConfig = {
         position: 'sidebar',
       },
     },
+    {
+      name: 'audioUrl',
+      type: 'text',
+      label: 'Audio URL',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'URL of the generated audio file for this post.',
+      },
+    },
   ],
   endpoints: [
     {

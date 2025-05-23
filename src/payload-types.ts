@@ -242,6 +242,10 @@ export interface BlogPost {
   favoritesCount?: number | null;
   views?: number | null;
   isEditorsPick?: boolean | null;
+  /**
+   * URL of the generated audio file for this post.
+   */
+  audioUrl?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -252,6 +256,7 @@ export interface BlogPost {
 export interface BlogCategory {
   id: string;
   name: string;
+  slug: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -401,6 +406,7 @@ export interface BlogPostsSelect<T extends boolean = true> {
   favoritesCount?: T;
   views?: T;
   isEditorsPick?: T;
+  audioUrl?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -410,6 +416,7 @@ export interface BlogPostsSelect<T extends boolean = true> {
  */
 export interface BlogCategoriesSelect<T extends boolean = true> {
   name?: T;
+  slug?: T;
   updatedAt?: T;
   createdAt?: T;
 }

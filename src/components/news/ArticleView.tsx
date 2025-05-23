@@ -239,6 +239,19 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
         {/* Article Content Container */}
         <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 relative">
           <div className="max-w-3xl mx-auto bg-white rounded-t-2xl -mt-2 sm:-mt-10 pt-6 sm:pt-10 pb-8 sm:pb-16 px-4 sm:px-8 md:px-12 shadow-sm relative z-10 article-content">
+            {/* Audio Player Section */}
+            {post.audioUrl && (
+              <div className="mb-6 sm:mb-8">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  Listen to this article:
+                </h3>
+                <audio controls className="w-full">
+                  <source src={post.audioUrl} type="audio/wav" />
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            )}
+
             {/* Main Content - Render Blocks */}
             {post.layout && post.layout.length > 0 ? (
               post.layout.map((block, i) => {

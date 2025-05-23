@@ -95,7 +95,7 @@ const CategoryLinks: React.FC<CategoryLinksProps> = ({
 
   const renderCategoryLinkNode = (category: BlogCategory, forMobile: boolean) => {
     return renderLink(
-      `/categories/${category.id}`,
+      `/categories/${category.slug}`,
       category.name,
       undefined,
       !forMobile,
@@ -258,7 +258,7 @@ const CategoryLinks: React.FC<CategoryLinksProps> = ({
             {overflowDynamicCategories.map((category) => (
               <DropdownMenuItem key={category.id} asChild>
                 <Link
-                  href={`/categories/${category.id}`}
+                  href={`/categories/${category.slug}`}
                   className="text-gray-700 hover:text-[#2aaac6]"
                 >
                   {category.name}

@@ -11,6 +11,7 @@ import { formatTimeAgo } from '@/utils/dateUtils'
 
 interface NewsCardProps {
   post: ImportedBlogPost
+  showCategories?: boolean
 }
 
 // Calculate estimated reading time
@@ -20,7 +21,7 @@ const calculateReadingTime = (text: string): number => {
   return Math.max(1, Math.ceil(wordCount / wordsPerMinute))
 }
 
-export const NewsCard: React.FC<NewsCardProps> = ({ post }) => {
+export const NewsCard: React.FC<NewsCardProps> = ({ post, showCategories = true }) => {
   const imageUrl = getPostImageFromLayout(post.layout)
   const excerpt = getPostExcerpt(post, { maxLength: 150, prioritizeCoverSubheading: false })
   const timeAgo = formatTimeAgo(post.createdAt)
@@ -76,7 +77,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ post }) => {
           )}
 
           {/* Category pill - positioned in top left */}
-          {primaryCategory && (
+          {showCategories && primaryCategory && (
             <div className="absolute top-3 left-3 z-10">
               <div
                 className="px-2.5 py-1 rounded-full text-xs font-medium tracking-wide text-white shadow-md"
@@ -124,7 +125,8 @@ export const NewsCard: React.FC<NewsCardProps> = ({ post }) => {
           <div className="pt-4 mt-auto border-t border-gray-100 flex items-center justify-between">
             {/* Additional categories as subtle badges */}
             <div className="flex flex-wrap gap-1.5">
-              {categories &&
+              {showCategories &&
+                categories &&
                 Array.isArray(categories) &&
                 categories.length > 1 &&
                 categories.slice(1, 3).map((category) =>
