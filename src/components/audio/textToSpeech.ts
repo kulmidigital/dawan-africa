@@ -1,13 +1,49 @@
 import 'dotenv/config'
 import textToSpeech from '@google-cloud/text-to-speech'
 
+// Function to get Google Cloud credentials
+const getGoogleCloudCredentials = () => {
+  // Method 1: Base64 encoded credentials (recommended for Vercel)
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64) {
+    try {
+      const credentials = JSON.parse(
+        Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64, 'base64').toString(),
+      )
+      return {
+        projectId: credentials.project_id,
+        credentials: {
+          client_email: credentials.client_email,
+          private_key: credentials.private_key,
+        },
+      }
+    } catch (error) {
+      console.error('Failed to parse base64 credentials:', error)
+    }
+  }
+
+  // Method 2: Individual environment variables (fallback)
+  if (
+    process.env.GOOGLE_APPLICATION_PROJECT_ID &&
+    process.env.GOOGLE_CLIENT_EMAIL &&
+    process.env.GOOGLE_APPLICATION_PRIVATE_KEY
+  ) {
+    return {
+      projectId: process.env.GOOGLE_APPLICATION_PROJECT_ID,
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_APPLICATION_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      },
+    }
+  }
+
+  throw new Error(
+    'Google Cloud credentials not found. Please set either GOOGLE_APPLICATION_CREDENTIALS_BASE64 or individual environment variables.',
+  )
+}
+
 // Creates a client with custom timeout settings
 const client = new textToSpeech.TextToSpeechClient({
-  projectId: process.env.GOOGLE_APPLICATION_PROJECT_ID,
-  credentials: {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_APPLICATION_PRIVATE_KEY,
-  },
+  ...getGoogleCloudCredentials(),
   // Set custom timeout and retry settings
   timeout: 120000, // 2 minutes timeout per request
   retrySettings: {

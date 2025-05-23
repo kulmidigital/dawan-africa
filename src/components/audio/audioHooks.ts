@@ -30,12 +30,18 @@ export const generateAudioAfterChange: CollectionAfterChangeHook = async ({
 
   // Check environment variables
   if (
-    !process.env.GOOGLE_APPLICATION_PROJECT_ID ||
-    !process.env.GOOGLE_CLIENT_EMAIL ||
-    !process.env.GOOGLE_APPLICATION_PRIVATE_KEY ||
+    !(
+      process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64 ||
+      (process.env.GOOGLE_APPLICATION_PROJECT_ID &&
+        process.env.GOOGLE_CLIENT_EMAIL &&
+        process.env.GOOGLE_APPLICATION_PRIVATE_KEY)
+    ) ||
     !process.env.UPLOADTHING_TOKEN
   ) {
     console.log('❌ [AUDIO HOOK] Audio generation skipped: missing environment variables')
+    console.log(
+      '❌ [AUDIO HOOK] Required: GOOGLE_APPLICATION_CREDENTIALS_BASE64 OR (GOOGLE_APPLICATION_PROJECT_ID + GOOGLE_CLIENT_EMAIL + GOOGLE_APPLICATION_PRIVATE_KEY) + UPLOADTHING_TOKEN',
+    )
     return doc
   }
 
@@ -76,7 +82,7 @@ export const generateAudioAfterChange: CollectionAfterChangeHook = async ({
     const isDevelopment = process.env.NODE_ENV === 'development'
     const baseUrl = isDevelopment
       ? 'http://localhost:3000'
-      : process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000'
+      : (process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000')
     const apiUrl = `${baseUrl}/api/generate-audio/${doc.id}`
 
     console.log(`🌐 [AUDIO HOOK] API URL: ${apiUrl}`)
@@ -174,5 +180,5 @@ export const deleteAudioBeforeDelete: CollectionBeforeDeleteHook = async ({ req,
     )
   }
 
-  return true 
+  return true
 }
