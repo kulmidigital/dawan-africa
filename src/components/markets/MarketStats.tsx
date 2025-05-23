@@ -80,7 +80,7 @@ export const MarketStats: React.FC<MarketStatsProps> = ({ className }) => {
     },
     {
       title: 'Cryptos',
-      value: formatNumber(globalData.activeCryptocurrencies || 0),
+      value: formatNumber(globalData.activeCryptocurrencies ?? 0),
       icon: <TrendingUp className="h-3.5 w-3.5 text-gray-500" />,
       isLoading: globalData.isLoading,
     },
