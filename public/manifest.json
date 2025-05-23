@@ -1,13 +1,13 @@
 {
-  "name": "Dawan Africa - Uncovering the Continent",
+  "name": "Dawan Africa",
   "short_name": "Dawan Africa",
-  "description": "Uncovering the Continent — Through Its Own Lens. Stay updated with the latest African news, insights, and perspectives.",
+  "description": "Uncovering the Continent — Through Its Own Lens",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2aaac6",
   "orientation": "portrait-primary",
-  "scope": "/",
   "icons": [
     {
       "src": "/favicon.png",
@@ -17,12 +17,73 @@
     },
     {
       "src": "/favicon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["news", "journalism", "africa", "politics", "business"],
+  "categories": ["news", "journalism", "africa", "information"],
   "lang": "en",
-  "dir": "ltr"
+  "dir": "ltr",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "screenshots": [
+    {
+      "src": "/favicon.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Dawan Africa - Latest News"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Dawan Africa Mobile"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Latest News",
+      "short_name": "News",
+      "description": "Browse the latest news articles",
+      "url": "/news",
+      "icons": [
+        {
+          "src": "/favicon.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Markets",
+      "short_name": "Markets",
+      "description": "Check cryptocurrency markets",
+      "url": "/markets",
+      "icons": [
+        {
+          "src": "/favicon.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
 }
