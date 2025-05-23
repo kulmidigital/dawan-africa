@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { CategoryPostsList } from '@/components/categories/CategoryPostsList'
 import { BlogCategory } from '@/payload-types'
 import { FootballLeagueButtons } from '@/components/categories/FootballLeagueButtons'
+import { getPayload } from 'payload'
+import configPromise from '@/payload.config'
 
 interface CategoryPageProps {
   params: Promise<{
@@ -10,25 +12,22 @@ interface CategoryPageProps {
   }>
 }
 
-// Fetch category by slug from the API
+// Fetch category by slug using Payload's local API
 async function getCategory(slug: string) {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/blogCategories?where[slug][equals]=${slug}&limit=1`,
-      {
-        next: { revalidate: 60 }, // Revalidate every minute
-        headers: {
-          'Content-Type': 'application/json',
+    const payload = await getPayload({ config: configPromise })
+
+    const result = await payload.find({
+      collection: 'blogCategories',
+      where: {
+        slug: {
+          equals: slug,
         },
       },
-    )
+      limit: 1,
+    })
 
-    if (!res.ok) {
-      return null
-    }
-
-    const data = await res.json()
-    return data.docs?.[0] || null
+    return result.docs?.[0] || null
   } catch (error) {
     console.error('Error fetching category:', error)
     return null
@@ -85,19 +84,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 // Generate static params for common categories (optional, for better performance)
 export async function generateStaticParams() {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/blogCategories?limit=100`,
-      { next: { revalidate: 3600 } },
-    )
+    const payload = await getPayload({ config: configPromise })
 
-    if (!res.ok) {
-      return []
-    }
-
-    const data = await res.json()
+    const result = await payload.find({
+      collection: 'blogCategories',
+      limit: 100,
+    })
 
     return (
-      data.docs?.map((category: BlogCategory) => ({
+      result.docs?.map((category: BlogCategory) => ({
         slug: category.slug,
       })) || []
     )
