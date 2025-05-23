@@ -1,6 +1,4 @@
-'use client'
-
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import { BlogCategory, BlogPost } from '@/payload-types'
 import {
@@ -12,23 +10,16 @@ import {
   Sparkles,
   ArrowRight,
 } from 'lucide-react'
-import { Skeleton } from '@/components/ui/skeleton'
 import Image from 'next/image'
 
 // Import utility functions
 import { getPostImageFromLayout } from '@/utils/postUtils'
 
 interface CategorySectionProps {
-  categories: BlogCategory[]
+  categoriesWithPosts: (BlogCategory & { latestPost?: BlogPost })[]
 }
 
-export const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
-  const [categoriesWithPosts, setCategoriesWithPosts] = useState<
-    (BlogCategory & { latestPost?: BlogPost })[]
-  >([])
-  const [allCategories, setAllCategories] = useState<BlogCategory[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-
+export const CategorySection: React.FC<CategorySectionProps> = ({ categoriesWithPosts }) => {
   // Category information with icons and colors (fallbacks)
   const categoryStyles = [
     {
@@ -56,112 +47,6 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categories }) 
       gradient: 'from-[#2aaac6] to-[#218ba0]',
     },
   ]
-
-  // Fetch categories with posts and filter out categories without posts
-  useEffect(() => {
-    const fetchCategoriesWithPosts = async () => {
-      setLoading(true)
-
-      try {
-        // First fetch all categories
-        const categoriesResponse = await fetch('/api/blogCategories?limit=100')
-
-        if (!categoriesResponse.ok) {
-          console.error('❌ Categories API failed:', categoriesResponse.status)
-          throw new Error(`Failed to fetch categories: ${categoriesResponse.status}`)
-        }
-
-        const categoriesData = await categoriesResponse.json()
-        const fetchedCategories: BlogCategory[] = categoriesData.docs || []
-        setAllCategories(fetchedCategories)
-
-        // Then fetch recent posts with category information
-        const response = await fetch(`/api/blogPosts?limit=100&sort=-createdAt&depth=2`)
-
-        if (!response.ok) {
-          console.error('❌ API Response failed:', response.status, response.statusText)
-          throw new Error(`Failed to fetch posts: ${response.status}`)
-        }
-
-        const data = await response.json()
-        const posts: BlogPost[] = data.docs || []
-
-        // Create a map to track the latest post for each category
-        const categoryPostMap = new Map<string, { category: BlogCategory; latestPost: BlogPost }>()
-
-        // Filter posts that have categories
-        const postsWithCategories = posts.filter(
-          (post) => post.categories && Array.isArray(post.categories) && post.categories.length > 0,
-        )
-
-        // Process posts to find latest post for each category
-        postsWithCategories.forEach((post, postIndex) => {
-          if (post.categories && Array.isArray(post.categories)) {
-            post.categories.forEach((cat) => {
-              let categoryId: string | null = null
-              let categorySlug: string | null = null
-
-              // Handle both populated (object) and non-populated (string ID) categories
-              if (typeof cat === 'string') {
-                categoryId = cat
-                // Find the category from our fetched list by ID
-                const originalCategory = fetchedCategories.find((c) => c.id === categoryId)
-                if (originalCategory) {
-                  categorySlug = originalCategory.slug
-                }
-              } else if (typeof cat === 'object' && cat.id) {
-                categoryId = cat.id
-                categorySlug = cat.slug
-              }
-
-              if (categoryId && categorySlug) {
-                // Find the original category to ensure we have complete data
-                const originalCategory = fetchedCategories.find(
-                  (c) => c.id === categoryId || c.slug === categorySlug,
-                )
-
-                if (originalCategory && !categoryPostMap.has(categorySlug)) {
-                  categoryPostMap.set(categorySlug, {
-                    category: originalCategory,
-                    latestPost: post,
-                  })
-                }
-              }
-            })
-          }
-        })
-
-        // Convert map to array and limit to reasonable number for display
-        const result = Array.from(categoryPostMap.values())
-          .slice(0, 6) // Limit to 6 categories for better layout
-          .map(({ category, latestPost }) => ({
-            ...category,
-            latestPost,
-          }))
-
-        setCategoriesWithPosts(result)
-      } catch (error) {
-        console.error('Error fetching categories with posts:', error)
-        // Fallback to fetched categories without posts
-        setCategoriesWithPosts(allCategories.slice(0, 6))
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    // Fetch categories and posts on component mount
-    fetchCategoriesWithPosts()
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-64 rounded-xl" />
-        ))}
-      </div>
-    )
-  }
 
   if (categoriesWithPosts.length === 0) {
     return (

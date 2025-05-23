@@ -7,19 +7,18 @@ import { BlogPost } from '@/payload-types'
 import { ArrowRight } from 'lucide-react'
 import { CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { formatTimeAgo } from '@/utils/dateUtils'
 
 interface FeaturedPostCardProps {
   latestPost: BlogPost
   featuredImage: string | null
   excerpt: string
-  formatTimeAgo: (dateString: string) => string
 }
 
 export const FeaturedPostCard: React.FC<FeaturedPostCardProps> = ({
   latestPost,
   featuredImage,
   excerpt,
-  formatTimeAgo,
 }) => {
   return (
     <>

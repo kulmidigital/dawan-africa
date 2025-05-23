@@ -1,5 +1,3 @@
-'use client'
-
 import React from 'react'
 import { BlogPost } from '@/payload-types'
 import { Newspaper } from 'lucide-react'
@@ -9,15 +7,10 @@ import { getPostImageFromLayout } from '@/utils/postUtils'
 
 interface RecentNewsListProps {
   posts: BlogPost[]
-  formatTimeAgo: (dateString: string) => string
   postsToShow: number
 }
 
-export const RecentNewsList: React.FC<RecentNewsListProps> = ({
-  posts,
-  formatTimeAgo,
-  postsToShow,
-}) => {
+export const RecentNewsList: React.FC<RecentNewsListProps> = ({ posts, postsToShow }) => {
   return (
     <Card className="h-full border-0 shadow-md">
       <div
@@ -40,14 +33,7 @@ export const RecentNewsList: React.FC<RecentNewsListProps> = ({
 
           const imageUrl = getPostImageFromLayout(post.layout)
 
-          return (
-            <RecentNewsItem
-              key={`${post.id}-${index}`}
-              post={post}
-              imageUrl={imageUrl}
-              formatTimeAgo={formatTimeAgo}
-            />
-          )
+          return <RecentNewsItem key={`${post.id}-${index}`} post={post} imageUrl={imageUrl} />
         })}
       </div>
     </Card>

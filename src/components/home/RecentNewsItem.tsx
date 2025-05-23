@@ -4,18 +4,14 @@ import React from 'react'
 import Link from 'next/link'
 import { BlogPost } from '@/payload-types'
 import { Clock } from 'lucide-react'
+import { formatTimeAgo } from '@/utils/dateUtils'
 
 interface RecentNewsItemProps {
   post: BlogPost
   imageUrl: string | null
-  formatTimeAgo: (dateString: string) => string
 }
 
-export const RecentNewsItem: React.FC<RecentNewsItemProps> = ({
-  post,
-  imageUrl,
-  formatTimeAgo,
-}) => {
+export const RecentNewsItem: React.FC<RecentNewsItemProps> = ({ post, imageUrl }) => {
   return (
     <div className="group p-2 sm:p-3 transition-colors hover:bg-gray-50">
       <div className="flex gap-2 sm:gap-3">

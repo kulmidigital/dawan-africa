@@ -5,13 +5,13 @@ import Link from 'next/link'
 import { BlogPost } from '@/payload-types'
 import { Zap } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { formatTimeAgo } from '@/utils/dateUtils'
 
 interface FlashNewsProps {
   currentFlashPost: BlogPost | undefined
-  formatTimeAgo: (dateString: string) => string
 }
 
-export const FlashNews: React.FC<FlashNewsProps> = ({ currentFlashPost, formatTimeAgo }) => {
+export const FlashNews: React.FC<FlashNewsProps> = ({ currentFlashPost }) => {
   if (!currentFlashPost) return null
 
   return (
