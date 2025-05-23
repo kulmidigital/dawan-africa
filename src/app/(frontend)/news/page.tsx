@@ -1,13 +1,30 @@
 import React, { Suspense } from 'react'
 import { NewsList } from '@/components/news/NewsList'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { Metadata } from 'next'
 
-// Optionally, you can add metadata for SEO
-// import type { Metadata } from 'next'
-// export const metadata: Metadata = {
-//   title: 'Latest News | Dawan Africa',
-//   description: 'Stay updated with the latest news, articles, and insights from Dawan Africa.',
-// }
+export const metadata: Metadata = {
+  title: 'Latest News | Dawan Africa',
+  description: 'Stay updated with the latest news, articles, and insights from Dawan Africa.',
+  openGraph: {
+    title: 'Latest News | Dawan Africa',
+    description: 'Stay updated with the latest news, articles, and insights from Dawan Africa.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Latest News | Dawan Africa',
+    description: 'Stay updated with the latest news, articles, and insights from Dawan Africa.',
+  },
+}
+
+interface NewsPageProps {
+  searchParams?: Promise<{
+    search?: string
+    page?: string
+    sort?: string
+  }>
+}
 
 // Define a skeleton component for the fallback
 const NewsPageSkeleton = () => {
@@ -34,11 +51,13 @@ const NewsPageSkeleton = () => {
   )
 }
 
-export default function NewsPage() {
+export default async function NewsPage({ searchParams }: NewsPageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : {}
+
   return (
     <main className="bg-gray-50 min-h-screen">
       <Suspense fallback={<NewsPageSkeleton />}>
-        <NewsList />
+        <NewsList searchParams={resolvedSearchParams} />
       </Suspense>
     </main>
   )

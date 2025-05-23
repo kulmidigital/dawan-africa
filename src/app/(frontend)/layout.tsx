@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react'
 import '../global.css'
-import Header from '@/components/layout/Header'
+import HeaderServer from '@/components/layout/HeaderServer'
 import Footer from '@/components/layout/Footer'
 import { Source_Sans_3 } from 'next/font/google'
 import { AuthProvider } from '@/hooks/useAuth'
@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { readonly children: React.Reac
             <QueryProvider>
               <NavigationProvider>
                 <Toaster richColors position="top-right" />
-                <Header />
+                <HeaderServer />
                 <main className="flex-grow">{children}</main>
                 <Footer />
               </NavigationProvider>

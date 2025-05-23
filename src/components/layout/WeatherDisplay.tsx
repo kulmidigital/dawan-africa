@@ -22,6 +22,14 @@ interface WeatherData {
   error: boolean
 }
 
+// Server weather data type (from HeaderServer)
+interface ServerWeatherData {
+  temperature: number
+  condition: string
+  location: string
+  icon?: string
+}
+
 interface Coordinates {
   latitude: number
   longitude: number
@@ -29,21 +37,54 @@ interface Coordinates {
 
 interface WeatherDisplayProps {
   isMobile?: boolean
+  initialWeather?: ServerWeatherData | null
 }
 
-const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ isMobile = false }) => {
+const WeatherDisplay: React.FC<WeatherDisplayProps> = ({
+  isMobile = false,
+  initialWeather = null,
+}) => {
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null)
-  const [weather, setWeather] = useState<WeatherData>({
-    temperature: 0,
-    windSpeed: 0,
-    weatherCode: 0,
-    location: '',
-    loading: true,
-    error: false,
+  const [weather, setWeather] = useState<WeatherData>(() => {
+    // Initialize with server data if available
+    if (initialWeather) {
+      return {
+        temperature: initialWeather.temperature,
+        windSpeed: 0, // Server data doesn't include wind speed
+        weatherCode: getWeatherCodeFromCondition(initialWeather.condition),
+        location: initialWeather.location,
+        loading: false,
+        error: false,
+      }
+    }
+
+    return {
+      temperature: 0,
+      windSpeed: 0,
+      weatherCode: 0,
+      location: '',
+      loading: true,
+      error: false,
+    }
   })
 
-  // Get user's geolocation
+  // Convert weather condition string to weather code
+  function getWeatherCodeFromCondition(condition: string): number {
+    const lowerCondition = condition.toLowerCase()
+    if (lowerCondition.includes('clear') || lowerCondition.includes('sunny')) return 0
+    if (lowerCondition.includes('cloud')) return 2
+    if (lowerCondition.includes('rain')) return 61
+    if (lowerCondition.includes('drizzle')) return 51
+    if (lowerCondition.includes('snow')) return 71
+    if (lowerCondition.includes('thunder')) return 95
+    return 2 // Default to cloudy
+  }
+
+  // Get user's geolocation (only if no server weather data)
   useEffect(() => {
+    // If we have server weather data, don't fetch location-based weather
+    if (initialWeather) return
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -67,11 +108,11 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ isMobile = false }) => 
         longitude: 36.8219,
       })
     }
-  }, [])
+  }, [initialWeather])
 
-  // Get location name from coordinates using reverse geocoding
+  // Get location name from coordinates using reverse geocoding (only if no server data)
   useEffect(() => {
-    if (!coordinates) return
+    if (!coordinates || initialWeather) return
 
     const getLocationName = async () => {
       try {
@@ -101,11 +142,11 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ isMobile = false }) => 
     }
 
     getLocationName()
-  }, [coordinates])
+  }, [coordinates, initialWeather])
 
-  // Fetch weather data from Open-Meteo API
+  // Fetch weather data from Open-Meteo API (only if no server data)
   useEffect(() => {
-    if (!coordinates) return
+    if (!coordinates || initialWeather) return
 
     const fetchWeatherData = async () => {
       try {
@@ -138,7 +179,7 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ isMobile = false }) => 
     }
 
     fetchWeatherData()
-  }, [coordinates])
+  }, [coordinates, initialWeather])
 
   // Get weather icon based on weather code
   const getWeatherIcon = (code: number) => {

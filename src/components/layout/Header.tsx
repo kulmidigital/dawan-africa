@@ -7,12 +7,7 @@ import { format } from 'date-fns'
 import { useSearchParams } from 'next/navigation'
 
 // Replace Lucide icons with React Icons
-import {
-  BiCalendar,
-  BiSearch,
-  BiMenu,
-  BiX,
-} from 'react-icons/bi'
+import { BiCalendar, BiSearch, BiMenu, BiX } from 'react-icons/bi'
 
 import { BlogCategory, User as AuthUser } from '@/payload-types'
 import { Button } from '@/components/ui/button'
@@ -25,9 +20,22 @@ import DesktopNav from './DesktopNav'
 import MobileSearch from './MobileSearch'
 import MobileMenu from './MobileMenu'
 
+// Weather data type
+interface WeatherData {
+  temperature: number
+  condition: string
+  location: string
+  icon?: string
+}
+
+// Header props interface
+interface HeaderProps {
+  initialCategories?: BlogCategory[]
+  initialWeather?: WeatherData | null
+}
+
 // List of countries we want to feature
 const countries = ['Somalia', 'Kenya', 'Djibouti', 'Ethiopia', 'Eritrea']
-
 
 // Helper to get initials from name or email
 const getInitials = (name?: string | null, email?: string | null): string => {
@@ -44,7 +52,7 @@ const getInitials = (name?: string | null, email?: string | null): string => {
   return 'U' // Default fallback
 }
 
-const Header: React.FC = () => {
+const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather = null }) => {
   const { user, isLoading: authLoading, logout: authLogout } = useAuth()
   const searchParams = useSearchParams()
 
@@ -62,7 +70,8 @@ const Header: React.FC = () => {
     }
   }, [searchParams, setSearchTerm, setSearchField])
 
-  const [categories, setCategories] = useState<BlogCategory[]>([])
+  // Use the server-provided data instead of fetching client-side
+  const [categories] = useState<BlogCategory[]>(initialCategories)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -72,23 +81,6 @@ const Header: React.FC = () => {
     setSearchField('name')
     setIsMenuOpen(false) // Close mobile menu
   }
-
-  // Fetch categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch('/api/blogCategories')
-        if (response.ok) {
-          const data = await response.json()
-          setCategories(data.docs ?? [])
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error)
-      }
-    }
-
-    fetchCategories()
-  }, [])
 
   const today = new Date()
   const formattedDate = format(today, 'EEEE, MMMM d, yyyy')
@@ -153,7 +145,7 @@ const Header: React.FC = () => {
             {/* Right - Weather & Account & Search */}
             <div className="flex items-center space-x-4">
               {/* Weather (tablet and up) */}
-              <WeatherDisplay />
+              <WeatherDisplay initialWeather={initialWeather} />
 
               {/* Account/Login/Register Links */}
               <UserAuth />
