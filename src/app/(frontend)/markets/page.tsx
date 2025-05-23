@@ -20,12 +20,12 @@ interface MarketPageProps {
   }>
 }
 
-export default async function MarketsPage({ searchParams }: MarketPageProps) {
+export default async function MarketsPage({ searchParams }: Readonly <MarketPageProps>) {
   // Await searchParams as it's now a Promise in Next.js 15
   const params = await searchParams
-  const page = parseInt(params.page || '1', 10)
-  const searchTerm = params.search || ''
-  const sortBy = params.sort || 'market_cap_desc'
+  const page = parseInt(params.page ?? '1', 10)
+  const searchTerm = params.search ?? ''
+  const sortBy = params.sort ?? 'market_cap_desc'
 
   try {
     // Fetch all data server-side in parallel
@@ -57,7 +57,7 @@ export default async function MarketsPage({ searchParams }: MarketPageProps) {
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Market Data Unavailable</h1>
             <p className="text-gray-600 mb-4">
-              We're having trouble loading the market data. Please try again later.
+              We&apos;re having trouble loading the market data. Please try again later.
             </p>
             <button
               onClick={() => window.location.reload()}
