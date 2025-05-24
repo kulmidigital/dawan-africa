@@ -140,15 +140,13 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather 
           <div className="flex items-center justify-between py-2">
             {/* Mobile menu button (left) */}
             <div className="lg:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
+              <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-gray-600 hover:text-[#2aaac6] -ml-2"
+                className="flex items-center justify-center w-10 h-10 text-gray-600 hover:text-[#2aaac6] hover:bg-gray-100 rounded-md transition-colors -ml-2"
                 aria-label="Open main menu"
               >
                 {isMenuOpen ? <BiX className="h-5 w-5" /> : <BiMenu className="h-5 w-5" />}
-              </Button>
+              </button>
             </div>
 
             {/* Left - Logo (desktop) */}
@@ -180,7 +178,9 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather 
               </div>
 
               {/* Social Media (tablet and up) */}
-              <SocialIcons />
+              <div className="hidden md:block">
+                <SocialIcons />
+              </div>
 
               {/* Date (tablet and up) */}
               <div className="hidden md:flex items-center text-xs text-gray-500">
@@ -192,19 +192,19 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather 
             {/* Right - Weather & Account & Search & Install */}
             <div className="flex items-center space-x-4">
               {/* Weather (tablet and up) */}
-              <WeatherDisplay initialWeather={initialWeather} />
+              <div className="hidden md:block">
+                <WeatherDisplay initialWeather={initialWeather} />
+              </div>
 
-              {/* PWA Install Button */}
+              {/* PWA Install Button (tablet and up) */}
               {isInstallable && (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={handleInstallClick}
-                  className="hidden md:flex items-center gap-2 text-gray-600 hover:text-[#2aaac6]"
+                  className="hidden md:flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:text-[#2aaac6] hover:bg-gray-100 rounded-md transition-colors"
                 >
                   <BiDownload className="h-4 w-4" />
                   <span className="text-sm">Install App</span>
-                </Button>
+                </button>
               )}
 
               {/* Account/Login/Register Links */}
@@ -243,6 +243,11 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather 
         authLoading={authLoading}
         authLogout={authLogout}
         getInitials={getInitials}
+        // Pass additional props for mobile-specific content
+        initialWeather={initialWeather}
+        isInstallable={isInstallable}
+        handleInstallClick={handleInstallClick}
+        formattedDate={formattedDate}
       />
     </header>
   )

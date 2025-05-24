@@ -3,11 +3,22 @@
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { BiLogOut } from 'react-icons/bi'
+import { format } from 'date-fns'
+import { BiLogOut, BiCalendar, BiDownload } from 'react-icons/bi'
 import { BlogCategory, User } from '@/payload-types'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import CategoryLinks from './CategoryLinks'
+import SocialIcons from './SocialIcons'
+import WeatherDisplay from './WeatherDisplay'
+
+// Weather data type
+interface WeatherData {
+  temperature: number
+  condition: string
+  location: string
+  icon?: string
+}
 
 interface MobileMenuProps {
   isMenuOpen: boolean
@@ -19,6 +30,11 @@ interface MobileMenuProps {
   authLoading: boolean
   authLogout: () => void
   getInitials: (name?: string | null, email?: string | null) => string
+  // New props for mobile-specific content
+  initialWeather?: WeatherData | null
+  isInstallable: boolean
+  handleInstallClick: () => void
+  formattedDate: string
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -31,6 +47,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   authLoading,
   authLogout,
   getInitials,
+  initialWeather,
+  isInstallable,
+  handleInstallClick,
+  formattedDate,
 }) => {
   const router = useRouter()
 
@@ -118,6 +138,42 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
             isMobile={true}
             onLinkClick={() => setIsMenuOpen(false)}
           />
+
+          {/* Mobile-specific info section */}
+          <div className="border-t mt-4 pt-4 space-y-3">
+            {/* Date */}
+            <div className="flex items-center px-3 py-2 text-sm text-gray-600">
+              <BiCalendar className="mr-2 h-4 w-4" />
+              <span>{format(new Date(), 'EEEE, MMMM d, yyyy')}</span>
+            </div>
+
+            {/* Weather */}
+            <div className="px-3 py-2">
+              <WeatherDisplay initialWeather={initialWeather} />
+            </div>
+
+            {/* Social Media */}
+            <div className="px-3 py-2">
+              <div className="text-sm text-gray-600 mb-2">Follow Us</div>
+              <SocialIcons />
+            </div>
+
+            {/* PWA Install Button */}
+            {isInstallable && (
+              <div className="px-3 py-2">
+                <button
+                  onClick={() => {
+                    handleInstallClick()
+                    setIsMenuOpen(false)
+                  }}
+                  className="flex items-center gap-2 w-full px-4 py-3 bg-[#2EC6FE] text-white rounded-md hover:bg-[#26a8d1] transition-colors"
+                >
+                  <BiDownload className="h-5 w-5" />
+                  <span className="font-medium">Install Dawan Africa App</span>
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Auth links in mobile menu */}
           <div className="pt-2 pb-1 border-t mt-2">{authSectionContent}</div>
