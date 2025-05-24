@@ -23,36 +23,73 @@ const sourceSans3 = Source_Sans_3({
   display: 'swap',
 })
 
-export function generateViewport(): Viewport {
-  return {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    colorScheme: 'light dark',
-    themeColor:'#FFFFFF',
-  }
+export const viewport: Viewport = {
+  themeColor: sharedMetadata.themeColor,
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 }
 
 export const metadata: Metadata = {
   ...sharedMetadata,
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: siteConfig.name,
+    startupImage: [
+      {
+        url: '/logo.png',
+        media:
+          '(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)',
+      },
+      {
+        url: '/logo.png',
+        media:
+          '(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)',
+      },
+      {
+        url: '/logo.png',
+        media:
+          '(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)',
+      },
+      {
+        url: '/logo.png',
+        media:
+          '(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)',
+      },
+      {
+        url: '/logo.png',
+        media:
+          '(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)',
+      },
+    ],
   },
   formatDetection: {
     telephone: false,
   },
   other: {
     'mobile-web-app-capable': 'yes',
-    'msapplication-TileColor': '#FFFFFF',
+    'apple-mobile-web-app-capable': 'yes',
+    'application-name': siteConfig.name,
+    'apple-mobile-web-app-title': siteConfig.name,
+    'msapplication-TileColor': '#000000',
     'msapplication-tap-highlight': 'no',
+    'msapplication-starturl': '/',
   },
 }
 
 export default function RootLayout({ children }: { readonly children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={`scroll-smooth ${sourceSans3.variable}`}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="theme-color" content="#2EC6FE" />
+      </head>
       <body className={cn('font-sans', 'min-h-screen flex flex-col bg-gray-50')}>
         <Suspense fallback={<Loading fullScreen={true} message="Loading..." />}>
           <AuthProvider>
@@ -69,6 +106,24 @@ export default function RootLayout({ children }: { readonly children: React.Reac
             </QueryProvider>
           </AuthProvider>
         </Suspense>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(registration) {
+                      console.log('Service Worker registration successful');
+                    },
+                    function(err) {
+                      console.log('Service Worker registration failed: ', err);
+                    }
+                  );
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   )

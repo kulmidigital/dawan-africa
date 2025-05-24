@@ -3,15 +3,11 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { BlogPost, BlogCategory } from '@/payload-types'
 import { notFound } from 'next/navigation'
-import type { Metadata, ResolvingMetadata } from 'next'
-import { getPostImageFromLayout, getPostExcerpt } from '@/utils/postUtils'
+import type { Metadata } from 'next'
+import { getPostExcerpt } from '@/utils/postUtils'
 import { ArticleClientView } from '@/components/news/ArticleClientView'
 import { sharedMetadata } from '@/app/shared-metadata'
 import siteConfig from '@/app/shared-metadata'
-
-interface PageProps {
-  params: Promise<{ slug: string }>
-}
 
 // Function to fetch a single post by slug
 async function getPostBySlug(slug: string): Promise<BlogPost | null> {
