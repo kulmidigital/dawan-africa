@@ -21,7 +21,7 @@ async function getPostBySlug(slug: string): Promise<BlogPost | null> {
         },
       },
       limit: 1,
-      depth: 5, // Ensure categories are populated, may need to adjust depth or use GraphQL for precise field selection
+      depth: 5,
     })
     return response.docs[0] || null
   } catch (error) {

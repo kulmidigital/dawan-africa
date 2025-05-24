@@ -35,6 +35,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   ...sharedMetadata,
   manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.png',
+    apple: '/favicon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
