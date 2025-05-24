@@ -2,15 +2,31 @@ import React from 'react'
 import { Metadata } from 'next'
 import { CryptoMarketsServer } from '@/components/markets/CryptoMarketsServer'
 import { getGlobalMarketData, getTrendingCoins, getMarketListings } from '@/lib/market-data'
-import { generateMarketsMetadata, SITE_CONFIG } from '@/lib/seo'
+import { sharedMetadata } from '@/app/shared-metadata'
+import siteConfig from '@/app/shared-metadata'
 
-// Generate dynamic metadata for markets page
-export async function generateMetadata(): Promise<Metadata> {
-  const currentUrl = `${SITE_CONFIG.url}/markets`
-
-  return generateMarketsMetadata({
-    currentUrl,
-  })
+export const metadata: Metadata = {
+  ...sharedMetadata,
+  title: 'Markets | Dawan Africa - African Financial Markets & Analysis',
+  description:
+    'Track African financial markets, get real-time market data, expert analysis, and insights into African economies and business trends.',
+  openGraph: {
+    ...sharedMetadata.openGraph,
+    title: 'Markets | Dawan Africa - African Financial Markets & Analysis',
+    description:
+      'Track African financial markets, get real-time market data, expert analysis, and insights into African economies and business trends.',
+    url: new URL('/markets', siteConfig.url).toString(),
+    type: 'website',
+  },
+  twitter: {
+    ...sharedMetadata.twitter,
+    title: 'Markets | Dawan Africa - African Financial Markets & Analysis',
+    description:
+      'Track African financial markets, get real-time market data, expert analysis, and insights into African economies and business trends.',
+  },
+  alternates: {
+    canonical: new URL('/markets', siteConfig.url).toString(),
+  },
 }
 
 // Enable revalidation every 30 seconds for the entire page

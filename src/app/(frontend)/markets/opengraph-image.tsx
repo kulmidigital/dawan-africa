@@ -1,10 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { join } from 'node:path'
 import { readFile } from 'node:fs/promises'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
-import { BlogPost } from '@/payload-types'
-import { getPostExcerpt } from '@/utils/postUtils'
+import { getGlobalMarketData } from '@/lib/market-data'
 
 export const size = {
   width: 1200,
@@ -13,27 +10,13 @@ export const size = {
 
 export const contentType = 'image/png'
 
-export default async function Image({ params }: { params: { slug: string } }) {
-  // Get the post data
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-  const post = await payload
-    .find({
-      collection: 'blogPosts',
-      where: {
-        slug: {
-          equals: params.slug,
-        },
-      },
-    })
-    .then((res) => res.docs[0] as BlogPost)
+export default async function Image() {
+  // Get market data
+  const marketData = await getGlobalMarketData()
 
   // Read the logo file and convert to base64
   const logoData = await readFile(join(process.cwd(), 'public/logo.png'))
   const logoBase64 = `data:image/png;base64,${Buffer.from(logoData).toString('base64')}`
-
-  // Get the excerpt from the layout
-  const excerpt = getPostExcerpt(post)
 
   return new ImageResponse(
     (
@@ -66,7 +49,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
             fontFamily: 'Source Sans 3',
           }}
         >
-          {post.name}
+          African Financial Markets
         </div>
         <div
           style={{
@@ -74,14 +57,48 @@ export default async function Image({ params }: { params: { slug: string } }) {
             fontSize: '24px',
             lineHeight: 1.4,
             fontFamily: 'Source Sans 3',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            marginBottom: '30px',
           }}
         >
-          {excerpt}
+          Real-time market data and analysis
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            gap: '20px',
+            marginTop: 'auto',
+          }}
+        >
+          <div
+            style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              padding: '20px',
+              borderRadius: '10px',
+              flex: 1,
+            }}
+          >
+            <div style={{ color: '#E0E0E0', fontSize: '16px', marginBottom: '8px' }}>
+              Total Market Cap
+            </div>
+            <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>
+              ${(marketData.totalMarketCap / 1e9).toFixed(2)}B
+            </div>
+          </div>
+          <div
+            style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              padding: '20px',
+              borderRadius: '10px',
+              flex: 1,
+            }}
+          >
+            <div style={{ color: '#E0E0E0', fontSize: '16px', marginBottom: '8px' }}>
+              24h Volume
+            </div>
+            <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>
+              ${(marketData.totalVolume / 1e9).toFixed(2)}B
+            </div>
+          </div>
         </div>
       </div>
     ),
@@ -96,15 +113,4 @@ export default async function Image({ params }: { params: { slug: string } }) {
       ],
     },
   )
-}
-
-export function generateImageMetadata({ params }: { params: { slug: string } }) {
-  return [
-    {
-      contentType: 'image/png',
-      size: size,
-      id: 'og-image',
-      alt: `Dawan Africa - ${params.slug}`,
-    },
-  ]
 }

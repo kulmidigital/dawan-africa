@@ -6,29 +6,28 @@ import { FeaturedPosts } from '@/components/home/FeaturedPosts'
 import { CategorySection } from '@/components/home/CategorySection'
 import { BlogPost, BlogCategory } from '@/payload-types'
 import { subDays } from 'date-fns'
-import { generateHomepageMetadata, SITE_CONFIG } from '@/lib/seo'
-import type { Metadata } from 'next'
+import { Metadata } from 'next'
+import  { sharedMetadata } from '@/app/shared-metadata'
+import siteConfig from '@/app/shared-metadata'
 
-// Generate dynamic metadata for homepage
-export async function generateMetadata(): Promise<Metadata> {
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-
-  // Fetch the latest post to potentially use its image
-  const latestPostResponse = await payload.find({
-    collection: 'blogPosts',
-    limit: 1,
-    sort: '-createdAt',
-    depth: 2,
-  })
-
-  const latestPost = latestPostResponse.docs[0] || null
-  const currentUrl = SITE_CONFIG.url
-
-  return generateHomepageMetadata({
-    currentUrl,
-    featuredPost: latestPost,
-  })
+export const metadata: Metadata = {
+  ...sharedMetadata,
+  openGraph: {
+    ...sharedMetadata.openGraph,
+    title: 'Home | Dawan Africa - Uncovering the Continent Through Its Own Lens',
+    description:
+      'Discover the latest news, stories, and insights from across Africa. Your trusted source for African perspectives on politics, culture, business, and more.',
+    type: 'website',
+  },
+  twitter: {
+    ...sharedMetadata.twitter,
+    title: 'Home | Dawan Africa - Uncovering the Continent Through Its Own Lens',
+    description:
+      'Discover the latest news, stories, and insights from across Africa. Your trusted source for African perspectives on politics, culture, business, and more.',
+  },
+  alternates: {
+    canonical: new URL('/', siteConfig.url).toString(),
+  },
 }
 
 export default async function HomePage() {

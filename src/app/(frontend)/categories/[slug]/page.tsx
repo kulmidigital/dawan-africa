@@ -5,7 +5,6 @@ import { BlogCategory } from '@/payload-types'
 import { FootballLeagueButtons } from '@/components/categories/FootballLeagueButtons'
 import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
-import { generateCategoryMetadata, SITE_CONFIG } from '@/lib/seo'
 
 interface CategoryPageProps {
   params: Promise<{
@@ -35,27 +34,6 @@ async function getCategory(slug: string) {
   }
 }
 
-// Get post count for a category
-async function getCategoryPostCount(categoryId: string): Promise<number> {
-  try {
-    const payload = await getPayload({ config: configPromise })
-
-    const result = await payload.count({
-      collection: 'blogPosts',
-      where: {
-        categories: {
-          in: [categoryId],
-        },
-      },
-    })
-
-    return result.totalDocs
-  } catch (error) {
-    console.error('Error fetching category post count:', error)
-    return 0
-  }
-}
-
 // Generate metadata for SEO
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params
@@ -65,25 +43,26 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     return {
       title: 'Category Not Found',
       description: 'The requested category could not be found.',
-      robots: {
-        index: false,
-        follow: false,
-      },
     }
   }
 
-  // Get post count for better metadata
-  const postCount = await getCategoryPostCount(category.id)
-  const currentUrl = `${SITE_CONFIG.url}/categories/${category.slug}`
-
-  return generateCategoryMetadata({
-    category,
-    currentUrl,
-    postCount,
-  })
+  return {
+    title: `${category.name} - News & Articles`,
+    description: `Discover the latest news and articles in ${category.name}. Stay updated with comprehensive coverage and insights.`,
+    openGraph: {
+      title: `${category.name} - News & Articles`,
+      description: `Discover the latest news and articles in ${category.name}. Stay updated with comprehensive coverage and insights.`,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${category.name} - News & Articles`,
+      description: `Discover the latest news and articles in ${category.name}. Stay updated with comprehensive coverage and insights.`,
+    },
+  }
 }
 
-export default async function CategoryPage({ params }: Readonly<CategoryPageProps>) {
+export default async function CategoryPage({ params }: Readonly <CategoryPageProps>) {
   const { slug } = await params
   const category = await getCategory(slug)
 

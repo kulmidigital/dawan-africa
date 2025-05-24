@@ -49,3 +49,10 @@ output.mp3
 
 google-credentials.json
 /src/scripts
+
+# Next-PWA generated files
+**/public/workbox-*.js
+**/public/sw.js
+**/public/worker-*.js
+**/public/fallback-*.js # If you use offline fallbacks
+**/public/fallback-development.js

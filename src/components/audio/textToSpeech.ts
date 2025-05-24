@@ -1,14 +1,40 @@
 import 'dotenv/config'
 import textToSpeech from '@google-cloud/text-to-speech'
+import type { TextToSpeechClient } from '@google-cloud/text-to-speech'
 
 // Function to get Google Cloud credentials
 const getGoogleCloudCredentials = () => {
+  // Skip credential loading during build time or when not needed
+  if (process.env.NODE_ENV === 'production' && !process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64) {
+    throw new Error('Google Cloud credentials are required in production')
+  }
+
   // Method 1: Base64 encoded credentials (recommended for Vercel)
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64) {
     try {
-      const credentials = JSON.parse(
-        Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64, 'base64').toString(),
-      )
+      const base64String = process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64.trim()
+
+      // Validate base64 string is not empty
+      if (!base64String) {
+        throw new Error('GOOGLE_APPLICATION_CREDENTIALS_BASE64 is empty')
+      }
+
+      const decodedString = Buffer.from(base64String, 'base64').toString()
+
+      // Validate decoded string is not empty
+      if (!decodedString || decodedString.trim() === '') {
+        throw new Error('Decoded credentials string is empty')
+      }
+
+      const credentials = JSON.parse(decodedString)
+
+      // Validate required fields exist
+      if (!credentials.project_id || !credentials.client_email || !credentials.private_key) {
+        throw new Error(
+          'Missing required fields in credentials: project_id, client_email, or private_key',
+        )
+      }
+
       return {
         projectId: credentials.project_id,
         credentials: {
@@ -18,6 +44,10 @@ const getGoogleCloudCredentials = () => {
       }
     } catch (error) {
       console.error('Failed to parse base64 credentials:', error)
+      // Don't throw during build time - just log the error
+      if (process.env.NODE_ENV !== 'development') {
+        throw error
+      }
     }
   }
 
@@ -36,24 +66,42 @@ const getGoogleCloudCredentials = () => {
     }
   }
 
+  // During development or build time, return a dummy config to prevent crashes
+  if (process.env.NODE_ENV === 'development' || process.env.CI) {
+    console.warn(
+      '⚠️ Google Cloud credentials not properly configured - TTS features will be disabled',
+    )
+    return null
+  }
+
   throw new Error(
     'Google Cloud credentials not found. Please set either GOOGLE_APPLICATION_CREDENTIALS_BASE64 or individual environment variables.',
   )
 }
 
-// Creates a client with custom timeout settings
-const client = new textToSpeech.TextToSpeechClient({
-  ...getGoogleCloudCredentials(),
-  // Set custom timeout and retry settings
-  timeout: 120000, // 2 minutes timeout per request
-  retrySettings: {
-    totalTimeoutMillis: 180000, // 3 minutes total timeout
-    initialRetryDelayMillis: 1000, // Start with 1 second delay
-    retryDelayMultiplier: 2, // Double the delay each retry
-    maxRetryDelayMillis: 30000, // Max 30 seconds between retries
-    maxRetries: 3, // Maximum 3 retries
-  },
-})
+// Creates a client with custom timeout settings - but only if credentials are available
+let client: TextToSpeechClient | null = null
+
+try {
+  const credentials = getGoogleCloudCredentials()
+  if (credentials) {
+    client = new textToSpeech.TextToSpeechClient({
+      ...credentials,
+      // Set custom timeout and retry settings
+      timeout: 120000, // 2 minutes timeout per request
+      retrySettings: {
+        totalTimeoutMillis: 180000, // 3 minutes total timeout
+        initialRetryDelayMillis: 1000, // Start with 1 second delay
+        retryDelayMultiplier: 2, // Double the delay each retry
+        maxRetryDelayMillis: 30000, // Max 30 seconds between retries
+        maxRetries: 3, // Maximum 3 retries
+      },
+    })
+  }
+} catch (error) {
+  console.warn('⚠️ Could not initialize Google Cloud TTS client:', error)
+  client = null
+}
 
 // Retry configuration
 const RETRY_CONFIG = {
@@ -75,6 +123,13 @@ const calculateBackoffDelay = (attempt: number): number => {
 }
 
 export async function generateAudioFromText(textToSynthesize: string): Promise<Buffer> {
+  // Check if client is available
+  if (!client) {
+    throw new Error(
+      'Google Cloud TTS client is not available. Please check your credentials configuration.',
+    )
+  }
+
   console.log(
     `🎤 [TTS] Starting TTS synthesis for text (${textToSynthesize.length} chars): "${textToSynthesize.substring(0, 100)}${textToSynthesize.length > 100 ? '...' : ''}"`,
   )
@@ -116,9 +171,9 @@ export async function generateAudioFromText(textToSynthesize: string): Promise<B
       const [response] = await client.synthesizeSpeech(request)
 
       console.log(`🎤 [TTS] TTS API response received`)
-      console.log(`🎤 [TTS] Audio content exists: ${!!response.audioContent}`)
+      console.log(`🎤 [TTS] Audio content exists: ${!!response?.audioContent}`)
 
-      if (!response.audioContent) {
+      if (!response?.audioContent) {
         const error = new Error('No audio content received from Google TTS')
         console.error('❌ [TTS] No audio content received from Google TTS')
         throw error

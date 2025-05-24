@@ -4,8 +4,10 @@ import config from '@/payload.config'
 import { BlogPost, BlogCategory } from '@/payload-types'
 import { notFound } from 'next/navigation'
 import type { Metadata, ResolvingMetadata } from 'next'
+import { getPostImageFromLayout, getPostExcerpt } from '@/utils/postUtils'
 import { ArticleClientView } from '@/components/news/ArticleClientView'
-import { generateArticleMetadata, generateArticleJsonLd, SITE_CONFIG } from '@/lib/seo'
+import { sharedMetadata } from '@/app/shared-metadata'
+import siteConfig from '@/app/shared-metadata'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -64,30 +66,85 @@ async function getRelatedPosts(categoryIds: string[], currentPostId: string): Pr
 }
 
 // Generate dynamic metadata
-export async function generateMetadata(
-  { params: paramsPromise }: PageProps,
-  parent: ResolvingMetadata,
-): Promise<Metadata> {
-  const { slug } = await paramsPromise
-  const post = await getPostBySlug(slug)
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string }
+}): Promise<Metadata> {
+  // Get the post data
+  const payloadConfig = await config
+  const payload = await getPayload({ config: payloadConfig })
+  const post = await payload
+    .find({
+      collection: 'blogPosts',
+      where: {
+        slug: {
+          equals: params.slug,
+        },
+      },
+    })
+    .then((res) => res.docs[0] as BlogPost)
 
   if (!post) {
     return {
-      title: 'Article Not Found',
-      description: 'The article you are looking for does not exist.',
-      robots: {
-        index: false,
-        follow: false,
-      },
+      ...sharedMetadata,
+      title: 'Article Not Found | Dawan Africa',
     }
   }
 
-  const currentUrl = `${SITE_CONFIG.url}/news/${post.slug}`
+  // Get the excerpt from the layout
+  const excerpt = getPostExcerpt(post)
 
-  return generateArticleMetadata({
-    post,
-    currentUrl,
-  })
+  // Get the cover image from the layout
+  const coverImage = post.layout?.find((block) => block.blockType === 'cover')?.image
+  const ogImageUrl = coverImage
+    ? typeof coverImage === 'string'
+      ? coverImage
+      : coverImage?.url
+    : null
+
+  // Ensure we have a valid image URL
+  const ogImage =
+    ogImageUrl || new URL(`/news/${params.slug}/opengraph-image`, siteConfig.url).toString()
+
+  return {
+    ...sharedMetadata,
+    title: `${post.name} | Dawan Africa`,
+    description:
+      excerpt ||
+      'Read this insightful article on Dawan Africa, your trusted source for African news and perspectives.',
+    openGraph: {
+      ...sharedMetadata.openGraph,
+      title: post.name,
+      description:
+        excerpt ||
+        'Read this insightful article on Dawan Africa, your trusted source for African news and perspectives.',
+      url: new URL(`/news/${params.slug}`, siteConfig.url).toString(),
+      type: 'article',
+      publishedTime: post.createdAt,
+      modifiedTime: post.updatedAt,
+      authors: [siteConfig.url],
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: post.name,
+        },
+      ],
+    },
+    twitter: {
+      ...sharedMetadata.twitter,
+      title: post.name,
+      description:
+        excerpt ||
+        'Read this insightful article on Dawan Africa, your trusted source for African news and perspectives.',
+      images: [ogImage],
+    },
+    alternates: {
+      canonical: new URL(`/news/${params.slug}`, siteConfig.url).toString(),
+    },
+  }
 }
 
 export default async function NewsArticlePage({
@@ -117,22 +174,8 @@ export default async function NewsArticlePage({
     }
   }
 
-  // Generate JSON-LD structured data
-  const currentUrl = `${SITE_CONFIG.url}/news/${post.slug}`
-  const articleJsonLd = generateArticleJsonLd({
-    post,
-    currentUrl,
-  })
-
   return (
     <main className="bg-gray-50 min-h-screen">
-      {/* JSON-LD structured data for the article */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(articleJsonLd),
-        }}
-      />
       <ArticleClientView post={post} relatedPosts={relatedPosts} />
     </main>
   )

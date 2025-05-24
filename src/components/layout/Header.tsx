@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { useSearchParams } from 'next/navigation'
 
 // Replace Lucide icons with React Icons
-import { BiCalendar, BiSearch, BiMenu, BiX } from 'react-icons/bi'
+import { BiCalendar, BiSearch, BiMenu, BiX, BiDownload } from 'react-icons/bi'
 
 import { BlogCategory, User as AuthUser } from '@/payload-types'
 import { Button } from '@/components/ui/button'
@@ -75,6 +75,10 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
+  // PWA install states
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [isInstallable, setIsInstallable] = useState(false)
+
   // Navigate to search by country
   const navigateToCountrySearch = (country: string) => {
     setSearchTerm(country)
@@ -84,6 +88,49 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather 
 
   const today = new Date()
   const formattedDate = format(today, 'EEEE, MMMM d, yyyy')
+
+  // PWA installation handling
+  useEffect(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstallable(false)
+      return
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+      setIsInstallable(true)
+    }
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null)
+      setIsInstallable(false)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return
+
+    try {
+      await deferredPrompt.prompt()
+      const choiceResult = await deferredPrompt.userChoice
+
+      if (choiceResult.outcome === 'accepted') {
+        setDeferredPrompt(null)
+        setIsInstallable(false)
+      }
+    } catch (error) {
+      console.error('Install prompt error:', error)
+    }
+  }
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -142,10 +189,23 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather 
               </div>
             </div>
 
-            {/* Right - Weather & Account & Search */}
+            {/* Right - Weather & Account & Search & Install */}
             <div className="flex items-center space-x-4">
               {/* Weather (tablet and up) */}
               <WeatherDisplay initialWeather={initialWeather} />
+
+              {/* PWA Install Button */}
+              {isInstallable && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleInstallClick}
+                  className="hidden md:flex items-center gap-2 text-gray-600 hover:text-[#2aaac6]"
+                >
+                  <BiDownload className="h-4 w-4" />
+                  <span className="text-sm">Install App</span>
+                </Button>
+              )}
 
               {/* Account/Login/Register Links */}
               <UserAuth />

@@ -2,7 +2,32 @@ import React, { Suspense } from 'react'
 import { NewsList } from '@/components/news/NewsList'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Metadata } from 'next'
-import { generateNewsListingMetadata, SITE_CONFIG } from '@/lib/seo'
+import { sharedMetadata } from '@/app/shared-metadata'
+import siteConfig from '@/app/shared-metadata'
+
+export const metadata: Metadata = {
+  ...sharedMetadata,
+  title: 'News | Dawan Africa - Latest African News & Updates',
+  description:
+    'Stay informed with the latest news from across Africa. In-depth coverage of politics, business, technology, culture, and more from an African perspective.',
+  openGraph: {
+    ...sharedMetadata.openGraph,
+    title: 'News | Dawan Africa - Latest African News & Updates',
+    description:
+      'Stay informed with the latest news from across Africa. In-depth coverage of politics, business, technology, culture, and more from an African perspective.',
+    url: new URL('/news', siteConfig.url).toString(),
+    type: 'website',
+  },
+  twitter: {
+    ...sharedMetadata.twitter,
+    title: 'News | Dawan Africa - Latest African News & Updates',
+    description:
+      'Stay informed with the latest news from across Africa. In-depth coverage of politics, business, technology, culture, and more from an African perspective.',
+  },
+  alternates: {
+    canonical: new URL('/news', siteConfig.url).toString(),
+  },
+}
 
 interface NewsPageProps {
   searchParams?: Promise<{
@@ -10,24 +35,6 @@ interface NewsPageProps {
     page?: string
     sort?: string
   }>
-}
-
-// Generate dynamic metadata for news page
-export async function generateMetadata({ searchParams }: NewsPageProps): Promise<Metadata> {
-  const resolvedParams = searchParams ? await searchParams : {}
-  const searchTerm = resolvedParams.search
-  const page = parseInt(resolvedParams.page ?? '1', 10)
-
-  // Build the current URL with search parameters
-  const url = new URL(`${SITE_CONFIG.url}/news`)
-  if (searchTerm) url.searchParams.set('search', searchTerm)
-  if (page > 1) url.searchParams.set('page', page.toString())
-
-  return generateNewsListingMetadata({
-    currentUrl: url.toString(),
-    page,
-    searchTerm,
-  })
 }
 
 // Define a skeleton component for the fallback

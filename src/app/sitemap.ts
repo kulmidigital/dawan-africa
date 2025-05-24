@@ -1,66 +1,69 @@
 import { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { SITE_CONFIG } from '@/lib/seo'
+import siteConfig from '@/app/shared-metadata'
+
+async function getAllPosts() {
+  const payload = await getPayload({ config })
+  const posts = await payload.find({
+    collection: 'blogPosts',
+    limit: 1000, // Adjust based on your needs
+  })
+  return posts.docs
+}
+
+async function getAllCategories() {
+  const payload = await getPayload({ config })
+  const categories = await payload.find({
+    collection: 'blogCategories',
+    limit: 10,
+  })
+  return categories.docs
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const payload = await getPayload({ config })
-  const baseUrl = SITE_CONFIG.url
+  const baseUrl = siteConfig.url
+
+  // Get all posts and categories
+  const [posts, categories] = await Promise.all([getAllPosts(), getAllCategories()])
 
   // Static routes
-  const staticRoutes: MetadataRoute.Sitemap = [
+  const staticRoutes = [
     {
       url: baseUrl,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'daily' as const,
       priority: 1,
     },
     {
       url: `${baseUrl}/news`,
       lastModified: new Date(),
-      changeFrequency: 'hourly',
+      changeFrequency: 'hourly' as const,
       priority: 0.9,
     },
     {
       url: `${baseUrl}/markets`,
       lastModified: new Date(),
-      changeFrequency: 'hourly',
-      priority: 0.8,
+      changeFrequency: 'hourly' as const,
+      priority: 0.9,
     },
   ]
 
-  try {
-    // Fetch all blog posts
-    const postsResponse = await payload.find({
-      collection: 'blogPosts',
-      limit: 1000, // Adjust based on your needs
-      sort: '-updatedAt',
-    })
+  // Dynamic routes for blog posts
+  const postRoutes = posts.map((post) => ({
+    url: `${baseUrl}/news/${post.slug}`,
+    lastModified: new Date(post.updatedAt),
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }))
 
-    const postRoutes: MetadataRoute.Sitemap = postsResponse.docs.map((post) => ({
-      url: `${baseUrl}/news/${post.slug}`,
-      lastModified: new Date(post.updatedAt),
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
-    }))
+  // Dynamic routes for categories
+  const categoryRoutes = categories.map((category) => ({
+    url: `${baseUrl}/categories/${category.slug}`,
+    lastModified: new Date(category.updatedAt),
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }))
 
-    // Fetch all categories
-    const categoriesResponse = await payload.find({
-      collection: 'blogCategories',
-      limit: 100,
-    })
-
-    const categoryRoutes: MetadataRoute.Sitemap = categoriesResponse.docs.map((category) => ({
-      url: `${baseUrl}/categories/${category.slug}`,
-      lastModified: new Date(category.updatedAt || new Date()),
-      changeFrequency: 'daily' as const,
-      priority: 0.6,
-    }))
-
-    return [...staticRoutes, ...postRoutes, ...categoryRoutes]
-  } catch (error) {
-    console.error('Error generating sitemap:', error)
-    // Return at least static routes if dynamic content fails
-    return staticRoutes
-  }
+  return [...staticRoutes, ...postRoutes, ...categoryRoutes]
 }

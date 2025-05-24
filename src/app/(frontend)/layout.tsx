@@ -12,7 +12,9 @@ import { FloatingAudioPlayer } from '@/components/audio/FloatingAudioPlayer'
 import { Toaster } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Loading } from '@/components/global/Loading'
-import { baseMetadata, generateWebsiteJsonLd } from '@/lib/seo'
+import type { Metadata, Viewport } from 'next'
+import { sharedMetadata } from '@/app/shared-metadata'
+import siteConfig from '@/app/shared-metadata'
 
 const sourceSans3 = Source_Sans_3({
   subsets: ['latin'],
@@ -21,62 +23,36 @@ const sourceSans3 = Source_Sans_3({
   display: 'swap',
 })
 
-// Use improved SEO metadata
-export const metadata = baseMetadata
+export function generateViewport(): Viewport {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    colorScheme: 'light dark',
+    themeColor:'#FFFFFF',
+  }
+}
+
+export const metadata: Metadata = {
+  ...sharedMetadata,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: siteConfig.name,
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'msapplication-TileColor': '#FFFFFF',
+    'msapplication-tap-highlight': 'no',
+  },
+}
 
 export default function RootLayout({ children }: { readonly children: React.ReactNode }) {
-  const websiteJsonLd = generateWebsiteJsonLd()
-
   return (
     <html lang="en" suppressHydrationWarning className={`scroll-smooth ${sourceSans3.variable}`}>
-      <head>
-        {/* PWA Meta Tags */}
-        <meta name="application-name" content="Dawan Africa" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Dawan Africa" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#2aaac6" />
-        <meta name="msapplication-tap-highlight" content="no" />
-        <meta name="theme-color" content="#2aaac6" />
-
-        {/* Apple Touch Icons */}
-        <link rel="apple-touch-icon" href="/favicon.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/favicon.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
-        <link rel="apple-touch-icon" sizes="167x167" href="/favicon.png" />
-
-        {/* Apple Splash Screens */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-
-        {/* Microsoft Tiles */}
-        <meta name="msapplication-TileImage" content="/favicon.png" />
-        <meta name="msapplication-TileColor" content="#2aaac6" />
-
-        {/* JSON-LD structured data for website */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(websiteJsonLd),
-          }}
-        />
-
-        {/* Preconnect to external domains for performance */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-
-        {/* DNS prefetch for better performance */}
-        <link rel="dns-prefetch" href="//dawan-africa.vercel.app" />
-        <link rel="dns-prefetch" href="//utfs.io" />
-
-        {/* Viewport for PWA */}
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
-        />
-      </head>
       <body className={cn('font-sans', 'min-h-screen flex flex-col bg-gray-50')}>
         <Suspense fallback={<Loading fullScreen={true} message="Loading..." />}>
           <AuthProvider>

@@ -1,89 +1,39 @@
 {
-  "name": "Dawan Africa",
-  "short_name": "Dawan Africa",
-  "description": "Uncovering the Continent — Through Its Own Lens",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2aaac6",
-  "orientation": "portrait-primary",
+  "theme_color": "#2EC6FE",
+  "background_color": "#FFFFFF",
   "icons": [
     {
-      "src": "/favicon.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/favicon.png",
-      "sizes": "256x256",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/favicon.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/favicon.png",
+      "purpose": "maskable",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "icon512_maskable.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
+      "sizes": "512x512",
+      "src": "icon512_rounded.png",
+      "type": "image/png"
     }
   ],
-  "categories": ["news", "journalism", "africa", "information"],
-  "lang": "en",
-  "dir": "ltr",
-  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait-primary",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "dir": "auto",
+  "lang": "en-US",
+  "name": "Dawan Africa",
+  "short_name": "Dawan Africa",
+  "description": "Dawan Africa",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "categories": ["business", "productivity"],
   "prefer_related_applications": false,
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
   "screenshots": [
     {
-      "src": "/favicon.png",
+      "src": "og-default.png",
       "sizes": "1280x720",
       "type": "image/png",
-      "platform": "wide",
-      "label": "Dawan Africa - Latest News"
-    },
-    {
-      "src": "/favicon.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "platform": "narrow",
-      "label": "Dawan Africa Mobile"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Latest News",
-      "short_name": "News",
-      "description": "Browse the latest news articles",
-      "url": "/news",
-      "icons": [
-        {
-          "src": "/favicon.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Markets",
-      "short_name": "Markets",
-      "description": "Check cryptocurrency markets",
-      "url": "/markets",
-      "icons": [
-        {
-          "src": "/favicon.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
+      "form_factor": "wide"
     }
   ]
 }
