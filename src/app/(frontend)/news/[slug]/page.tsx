@@ -61,25 +61,15 @@ async function getRelatedPosts(categoryIds: string[], currentPostId: string): Pr
   }
 }
 
+type Props = {
+  params: Promise<{ slug: string }>
+}
+
 // Generate dynamic metadata
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string }
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Get the post data
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-  const post = await payload
-    .find({
-      collection: 'blogPosts',
-      where: {
-        slug: {
-          equals: params.slug,
-        },
-      },
-    })
-    .then((res) => res.docs[0] as BlogPost)
+  const { slug } = await params
+  const post = await getPostBySlug(slug)
 
   if (!post) {
     return {
@@ -100,8 +90,7 @@ export async function generateMetadata({
     : null
 
   // Ensure we have a valid image URL
-  const ogImage =
-    ogImageUrl || new URL(`/news/${params.slug}/opengraph-image`, siteConfig.url).toString()
+  const ogImage = ogImageUrl || new URL(`/news/${slug}/opengraph-image`, siteConfig.url).toString()
 
   return {
     ...sharedMetadata,
@@ -115,7 +104,7 @@ export async function generateMetadata({
       description:
         excerpt ||
         'Read this insightful article on Dawan Africa, your trusted source for African news and perspectives.',
-      url: new URL(`/news/${params.slug}`, siteConfig.url).toString(),
+      url: new URL(`/news/${slug}`, siteConfig.url).toString(),
       type: 'article',
       publishedTime: post.createdAt,
       modifiedTime: post.updatedAt,
@@ -138,17 +127,13 @@ export async function generateMetadata({
       images: [ogImage],
     },
     alternates: {
-      canonical: new URL(`/news/${params.slug}`, siteConfig.url).toString(),
+      canonical: new URL(`/news/${slug}`, siteConfig.url).toString(),
     },
   }
 }
 
-export default async function NewsArticlePage({
-  params: paramsPromise,
-}: {
-  params: Promise<{ slug: string }>
-}) {
-  const { slug } = await paramsPromise
+export default async function Page({ params }: Props) {
+  const { slug } = await params
   const post = await getPostBySlug(slug)
 
   if (!post) {
