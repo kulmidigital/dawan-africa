@@ -11,7 +11,7 @@ export const contentType = 'image/png'
 
 export default async function Image() {
   // Read the logo file and convert to base64
-  const logoData = await readFile(join(process.cwd(), 'public/logo.png'))
+  const logoData = await readFile(join(process.cwd(), 'public/og-default.png'))
   const logoBase64 = `data:image/png;base64,${Buffer.from(logoData).toString('base64')}`
 
   return new ImageResponse(
@@ -28,14 +28,15 @@ export default async function Image() {
           padding: '40px',
         }}
       >
-        <img
-          src={logoBase64}
-          alt="Dawan Africa Logo"
-          style={{
-            width: '300px',
-            marginBottom: '40px',
-          }}
-        />
+        <div style={{ display: 'flex', marginBottom: '40px' }}>
+          <img
+            src={logoBase64}
+            alt="Dawan Africa Logo"
+            style={{
+              width: '300px',
+            }}
+          />
+        </div>
         <div
           style={{
             color: 'white',

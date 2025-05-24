@@ -29,7 +29,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     .then((res) => res.docs[0] as BlogPost)
 
   // Read the logo file and convert to base64
-  const logoData = await readFile(join(process.cwd(), 'public/logo.png'))
+  const logoData = await readFile(join(process.cwd(), 'public/og-default.png'))
   const logoBase64 = `data:image/png;base64,${Buffer.from(logoData).toString('base64')}`
 
   // Get the excerpt from the layout
@@ -64,6 +64,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             lineHeight: 1.2,
             marginBottom: '20px',
             fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            display: 'flex',
           }}
         >
           {post.name}
@@ -74,11 +75,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             fontSize: '24px',
             lineHeight: 1.4,
             fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            display: 'flex',
           }}
         >
           {excerpt}

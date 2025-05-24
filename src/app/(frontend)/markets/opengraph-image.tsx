@@ -15,7 +15,7 @@ export default async function Image() {
   const marketData = await getGlobalMarketData()
 
   // Read the logo file and convert to base64
-  const logoData = await readFile(join(process.cwd(), 'public/logo.png'))
+  const logoData = await readFile(join(process.cwd(), 'public/og-default.png'))
   const logoBase64 = `data:image/png;base64,${Buffer.from(logoData).toString('base64')}`
 
   return new ImageResponse(
@@ -75,6 +75,8 @@ export default async function Image() {
               padding: '20px',
               borderRadius: '10px',
               flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
             <div style={{ color: '#E0E0E0', fontSize: '16px', marginBottom: '8px' }}>
@@ -90,6 +92,8 @@ export default async function Image() {
               padding: '20px',
               borderRadius: '10px',
               flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
             <div style={{ color: '#E0E0E0', fontSize: '16px', marginBottom: '8px' }}>
