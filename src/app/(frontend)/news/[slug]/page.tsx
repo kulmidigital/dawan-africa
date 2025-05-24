@@ -111,7 +111,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       authors: [siteConfig.url],
       images: [
         {
-          url: ogImage,
+          url: '/og-default.png',
           width: 1200,
           height: 630,
           alt: post.name,
@@ -124,7 +124,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description:
         excerpt ||
         'Read this insightful article on Dawan Africa, your trusted source for African news and perspectives.',
-      images: [ogImage],
+      images: ['/og-default.png'],
     },
     alternates: {
       canonical: new URL(`/news/${slug}`, siteConfig.url).toString(),

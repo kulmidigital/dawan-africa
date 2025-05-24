@@ -1,22 +1,10 @@
 import type { Metadata } from 'next'
 
-const siteConfig = {
+export const siteConfig = {
   name: 'Dawan Africa',
-  description: 'Uncovering the Continent — Through Its Own Lens',
-  url: process.env.NEXT_PUBLIC_SERVER_URL ?? 'https://dawana.frica',
-  ogImage: '/og-default.png',
-  keywords: ['Africa', 'News', 'Culture', 'Politics', 'Business', 'Technology', 'Sports'],
-  authors: [
-    {
-      name: 'Dawan Africa',
-      url: 'https://dawana.frica',
-    },
-  ],
-  creator: 'Dawan Africa',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
-    { media: '(prefers-color-scheme: dark)', color: '#2EC6FE' },
-  ],
+  description: 'Uncovering the Continent Through Its Own Lens',
+  url: process.env.NODE_ENV === 'production' ? 'https://dawan.africa' : 'http://localhost:3000',
+  themeColor: '#2EC6FE',
 }
 
 export const sharedMetadata: Metadata = {
@@ -26,23 +14,38 @@ export const sharedMetadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  keywords: siteConfig.keywords,
-  authors: siteConfig.authors,
-  creator: siteConfig.creator,
-  themeColor: siteConfig.themeColor,
+  keywords: [
+    'Africa',
+    'News',
+    'Markets',
+    'Finance',
+    'Economics',
+    'Business',
+    'Investment',
+    'Analysis',
+    'Dawan Africa',
+  ],
+  authors: [{ name: 'Dawan Africa' }],
+  creator: 'Dawan Africa',
+  publisher: 'Dawan Africa',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: siteConfig.url,
+    siteName: siteConfig.name,
     title: siteConfig.name,
     description: siteConfig.description,
-    siteName: siteConfig.name,
     images: [
       {
-        url: siteConfig.ogImage,
+        url: '/og-default.png',
         width: 1200,
         height: 630,
-        alt: siteConfig.name,
+        alt: `${siteConfig.name} - ${siteConfig.description}`,
       },
     ],
   },
@@ -50,7 +53,7 @@ export const sharedMetadata: Metadata = {
     card: 'summary_large_image',
     title: siteConfig.name,
     description: siteConfig.description,
-    images: [siteConfig.ogImage],
+    images: ['/og-default.png'],
     creator: '@dawanafrica',
   },
   robots: {
@@ -64,15 +67,9 @@ export const sharedMetadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
-  },
-  manifest: '/manifest.json',
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    google: 'google-site-verification-code',
   },
 }
 
-export default siteConfig 
+export default siteConfig

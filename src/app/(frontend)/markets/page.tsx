@@ -17,12 +17,21 @@ export const metadata: Metadata = {
       'Track African financial markets, get real-time market data, expert analysis, and insights into African economies and business trends.',
     url: new URL('/markets', siteConfig.url).toString(),
     type: 'website',
+    images: [
+      {
+        url: '/og-default.png',
+        width: 1200,
+        height: 630,
+        alt: 'Dawan Africa - African Financial Markets & Analysis',
+      },
+    ],
   },
   twitter: {
     ...sharedMetadata.twitter,
     title: 'Markets | Dawan Africa - African Financial Markets & Analysis',
     description:
       'Track African financial markets, get real-time market data, expert analysis, and insights into African economies and business trends.',
+    images: ['/og-default.png'],
   },
   alternates: {
     canonical: new URL('/markets', siteConfig.url).toString(),
