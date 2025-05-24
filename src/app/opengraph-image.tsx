@@ -43,7 +43,7 @@ export default async function Image() {
             fontWeight: 'bold',
             textAlign: 'center',
             marginBottom: '20px',
-            fontFamily: 'Source Sans 3',
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           }}
         >
           Uncovering the Continent
@@ -53,7 +53,7 @@ export default async function Image() {
             color: 'white',
             fontSize: '40px',
             textAlign: 'center',
-            fontFamily: 'Source Sans 3',
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           }}
         >
           Through Its Own Lens
@@ -62,13 +62,6 @@ export default async function Image() {
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: 'Source Sans 3',
-          data: await readFile(join(process.cwd(), 'public/fonts/SourceSans3-Regular.ttf')),
-          style: 'normal',
-        },
-      ],
     },
   )
 }

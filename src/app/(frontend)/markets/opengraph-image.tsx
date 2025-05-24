@@ -46,7 +46,7 @@ export default async function Image() {
             fontWeight: 'bold',
             lineHeight: 1.2,
             marginBottom: '20px',
-            fontFamily: 'Source Sans 3',
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           }}
         >
           African Financial Markets
@@ -56,7 +56,7 @@ export default async function Image() {
             color: '#E0E0E0',
             fontSize: '24px',
             lineHeight: 1.4,
-            fontFamily: 'Source Sans 3',
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             marginBottom: '30px',
           }}
         >
@@ -104,13 +104,6 @@ export default async function Image() {
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: 'Source Sans 3',
-          data: await readFile(join(process.cwd(), 'public/fonts/SourceSans3-Regular.ttf')),
-          style: 'normal',
-        },
-      ],
     },
   )
 }

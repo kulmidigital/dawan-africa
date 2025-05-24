@@ -13,16 +13,16 @@ export const size = {
 
 export const contentType = 'image/png'
 
-export default async function Image({ params }: { params: { slug: string } }) {
+export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   // Get the post data
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
+  const { slug } = await params
+  const payload = await getPayload({ config })
   const post = await payload
     .find({
       collection: 'blogPosts',
       where: {
         slug: {
-          equals: params.slug,
+          equals: slug,
         },
       },
     })
@@ -63,7 +63,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
             fontWeight: 'bold',
             lineHeight: 1.2,
             marginBottom: '20px',
-            fontFamily: 'Source Sans 3',
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           }}
         >
           {post.name}
@@ -73,7 +73,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
             color: '#E0E0E0',
             fontSize: '24px',
             lineHeight: 1.4,
-            fontFamily: 'Source Sans 3',
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             display: '-webkit-box',
             WebkitLineClamp: 3,
             WebkitBoxOrient: 'vertical',
@@ -87,24 +87,18 @@ export default async function Image({ params }: { params: { slug: string } }) {
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: 'Source Sans 3',
-          data: await readFile(join(process.cwd(), 'public/fonts/SourceSans3-Regular.ttf')),
-          style: 'normal',
-        },
-      ],
     },
   )
 }
 
-export function generateImageMetadata({ params }: { params: { slug: string } }) {
+export async function generateImageMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   return [
     {
       contentType: 'image/png',
       size: size,
       id: 'og-image',
-      alt: `Dawan Africa - ${params.slug}`,
+      alt: `Dawan Africa - ${slug}`,
     },
   ]
 }
