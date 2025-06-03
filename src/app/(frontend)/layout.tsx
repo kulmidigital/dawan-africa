@@ -37,6 +37,9 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   ...sharedMetadata,
   manifest: '/manifest.json',
+  verification: {
+    google: '84QZctK6dL25aaWZQeIS4z04cFQTcKGTSnyZmMJzcvk',
+  },
   icons: {
     icon: '/favicon.png',
     apple: '/favicon.png',
