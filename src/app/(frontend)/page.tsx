@@ -44,7 +44,7 @@ export default async function HomePage() {
     sort: '-createdAt',
     depth: 2,
     where: {
-      status: { equals: 'published' },
+      status: { equals: 'published' }, 
     },
   })
 

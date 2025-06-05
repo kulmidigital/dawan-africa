@@ -86,6 +86,7 @@ export const getAuthorDisplayName = (author: BlogPost['author']): string => {
   return 'Unknown Author'
 }
 
+
 /**
  * Gets the author's full name from a BlogPost.
  * @param author - The author object or ID from a BlogPost.
