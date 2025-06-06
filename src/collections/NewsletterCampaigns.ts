@@ -619,12 +619,13 @@ export const NewsletterCampaigns: CollectionConfig = {
                 const redactedEmail = redactEmail(subscriber.email)
                 console.log(`📧 Sending email ${index + 1}/${total} to: ${redactedEmail}`)
 
-                try {
-                  // Fix: Generate secure unsubscribe token with normalized email
-                  const normalizedEmail = normalizeEmail(subscriber.email)
-                  const secureToken = generateSecureUnsubscribeToken(normalizedEmail)
+                const normalizedEmail = normalizeEmail(subscriber.email)
+                let secureToken: string | null = null
 
-                  // Debug: Log token generation to identify issues
+                try {
+                  // Generate the token within a try-catch to isolate errors
+                  secureToken = generateSecureUnsubscribeToken(normalizedEmail)
+
                   console.log('🔑 Token generation debug:', {
                     email: `${normalizedEmail.substring(0, 3)}***`,
                     tokenGenerated: !!secureToken,
@@ -632,6 +633,27 @@ export const NewsletterCampaigns: CollectionConfig = {
                     hasSecret: !!process.env.UNSUBSCRIBE_TOKEN_SECRET,
                   })
 
+                  if (!secureToken) {
+                    // This should theoretically not be reached due to the function's structure,
+                    // but we keep it as a safeguard.
+                    throw new Error('generateSecureUnsubscribeToken returned a falsy value.')
+                  }
+                } catch (tokenError) {
+                  console.error(
+                    `❌ Fatal error during token generation for ${redactedEmail}:`,
+                    tokenError,
+                  )
+                  // This prevents sending emails with broken unsubscribe links.
+                  const errorMessage =
+                    tokenError instanceof Error ? tokenError.message : 'Unknown error'
+                  return {
+                    success: false,
+                    subscriber: redactedEmail,
+                    error: `Token generation failed: ${errorMessage}`,
+                  }
+                }
+
+                try {
                   const unsubscribeUrl = `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://dawan.africa'}/api/newsletter/unsubscribe?email=${encodeURIComponent(normalizedEmail)}&token=${encodeURIComponent(secureToken)}`
 
                   // Generate both HTML and text versions
@@ -670,7 +692,7 @@ export const NewsletterCampaigns: CollectionConfig = {
                   return { success: true, subscriber: redactedEmail }
                 } catch (error) {
                   const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-                  console.log('📧 Email failed:', errorMessage)
+                  console.log('📧 Email sending failed:', errorMessage)
                   return { success: false, subscriber: redactedEmail, error: errorMessage }
                 }
               }
