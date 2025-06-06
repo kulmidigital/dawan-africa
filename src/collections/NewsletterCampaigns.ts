@@ -335,7 +335,7 @@ async function generateEmailHTML(
             <div class="unsubscribe">
                 <p>This email was sent to ${subscriberEmail}</p>
                 <p>
-                    <a href="${unsubscribeUrl}">Unsubscribe</a> | 
+                    <a href="${escapeHtml(unsubscribeUrl)}">Unsubscribe</a> | 
                     <a href="https://dawan.africa/newsletter">Update Preferences</a>
                 </p>
             </div>
