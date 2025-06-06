@@ -3,6 +3,7 @@ import { convertLexicalToHTMLAsync } from '@payloadcms/richtext-lexical/html-asy
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import DOMPurify from 'isomorphic-dompurify'
 import crypto from 'crypto'
+import { buildUnsubscribeUrl, escapeUrlForHtml } from '@/utils/unsubscribe'
 
 // HTML escaping function to prevent XSS
 function escapeHtml(unsafe: string): string {
@@ -28,40 +29,7 @@ function normalizeEmail(email: string): string {
   return email.toLowerCase().trim()
 }
 
-// Secure HMAC token generation for unsubscribe links
-function generateSecureUnsubscribeToken(email: string): string {
-  const secret = process.env.UNSUBSCRIBE_TOKEN_SECRET
-  if (!secret) {
-    console.error(
-      '❌ UNSUBSCRIBE_TOKEN_SECRET environment variable is required for secure unsubscribe links',
-    )
-    // Generate a fallback token (less secure but functional)
-    const fallbackSecret =
-      'da7f89b2c5e34a6f8d9e0c12b845a3f7e68d92c1b5f74e89a0d3c67b4e12f953c8a6d4e7b9f2c5a8e1d47b6c9f2e58a3d70b4e81c6f923d57a84e69c12b5f7'
-    console.warn(
-      '⚠️ Using fallback secret for unsubscribe tokens - please set UNSUBSCRIBE_TOKEN_SECRET',
-    )
-
-    const normalizedEmail = normalizeEmail(email)
-    const timestamp = Date.now().toString()
-    const data = `${normalizedEmail}:${timestamp}`
-    const hmac = crypto.createHmac('sha256', fallbackSecret)
-    hmac.update(data)
-    const signature = hmac.digest('hex')
-    return `${timestamp}:${signature}`
-  }
-
-  // Fix: Normalize email before generating token to match verification logic
-  const normalizedEmail = normalizeEmail(email)
-  const timestamp = Date.now().toString()
-  const data = `${normalizedEmail}:${timestamp}`
-  const hmac = crypto.createHmac('sha256', secret)
-  hmac.update(data)
-  const signature = hmac.digest('hex')
-
-  // Return timestamp:signature format for verification
-  return `${timestamp}:${signature}`
-}
+// Note: Token generation is now handled by the centralized utility function in @/utils/unsubscribe
 
 // Email template function (simplified without relationships)
 async function generateEmailHTML(
@@ -620,42 +588,33 @@ export const NewsletterCampaigns: CollectionConfig = {
                 console.log(`📧 Sending email ${index + 1}/${total} to: ${redactedEmail}`)
 
                 const normalizedEmail = normalizeEmail(subscriber.email)
-                let secureToken: string | null = null
+                let unsubscribeUrl: string
 
                 try {
-                  // Generate the token within a try-catch to isolate errors
-                  secureToken = generateSecureUnsubscribeToken(normalizedEmail)
+                  // Use the centralized utility function for secure unsubscribe URLs
+                  unsubscribeUrl = buildUnsubscribeUrl(subscriber.email)
 
-                  console.log('🔑 Token generation debug:', {
+                  console.log('🔑 Unsubscribe URL generation debug:', {
                     email: `${normalizedEmail.substring(0, 3)}***`,
-                    tokenGenerated: !!secureToken,
-                    tokenLength: secureToken ? secureToken.length : 0,
+                    urlGenerated: !!unsubscribeUrl,
                     hasSecret: !!process.env.UNSUBSCRIBE_TOKEN_SECRET,
                   })
-
-                  if (!secureToken) {
-                    // This should theoretically not be reached due to the function's structure,
-                    // but we keep it as a safeguard.
-                    throw new Error('generateSecureUnsubscribeToken returned a falsy value.')
-                  }
-                } catch (tokenError) {
+                } catch (urlError) {
                   console.error(
-                    `❌ Fatal error during token generation for ${redactedEmail}:`,
-                    tokenError,
+                    `❌ Fatal error during unsubscribe URL generation for ${redactedEmail}:`,
+                    urlError,
                   )
                   // This prevents sending emails with broken unsubscribe links.
                   const errorMessage =
-                    tokenError instanceof Error ? tokenError.message : 'Unknown error'
+                    urlError instanceof Error ? urlError.message : 'Unknown error'
                   return {
                     success: false,
                     subscriber: redactedEmail,
-                    error: `Token generation failed: ${errorMessage}`,
+                    error: `Unsubscribe URL generation failed: ${errorMessage}`,
                   }
                 }
 
                 try {
-                  const unsubscribeUrl = `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://dawan.africa'}/api/newsletter/unsubscribe?email=${encodeURIComponent(normalizedEmail)}&token=${encodeURIComponent(secureToken)}`
-
                   // Generate both HTML and text versions
                   const htmlContent = await generateEmailHTML(
                     doc.content,
@@ -676,6 +635,10 @@ export const NewsletterCampaigns: CollectionConfig = {
                     html: htmlContent,
                     text: textContent,
                     replyTo: 'info@dawan.africa',
+                    headers: {
+                      'List-Unsubscribe': `<${unsubscribeUrl}>, <mailto:info@dawan.africa?subject=unsubscribe>`,
+                      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                    },
                   })
 
                   console.log('📧 Email result:', emailResult)
