@@ -32,7 +32,23 @@ function normalizeEmail(email: string): string {
 function generateSecureUnsubscribeToken(email: string): string {
   const secret = process.env.UNSUBSCRIBE_TOKEN_SECRET
   if (!secret) {
-    throw new Error('UNSUBSCRIBE_TOKEN_SECRET environment variable is required')
+    console.error(
+      '❌ UNSUBSCRIBE_TOKEN_SECRET environment variable is required for secure unsubscribe links',
+    )
+    // Generate a fallback token (less secure but functional)
+    const fallbackSecret =
+      'da7f89b2c5e34a6f8d9e0c12b845a3f7e68d92c1b5f74e89a0d3c67b4e12f953c8a6d4e7b9f2c5a8e1d47b6c9f2e58a3d70b4e81c6f923d57a84e69c12b5f7'
+    console.warn(
+      '⚠️ Using fallback secret for unsubscribe tokens - please set UNSUBSCRIBE_TOKEN_SECRET',
+    )
+
+    const normalizedEmail = normalizeEmail(email)
+    const timestamp = Date.now().toString()
+    const data = `${normalizedEmail}:${timestamp}`
+    const hmac = crypto.createHmac('sha256', fallbackSecret)
+    hmac.update(data)
+    const signature = hmac.digest('hex')
+    return `${timestamp}:${signature}`
   }
 
   // Fix: Normalize email before generating token to match verification logic
@@ -607,6 +623,15 @@ export const NewsletterCampaigns: CollectionConfig = {
                   // Fix: Generate secure unsubscribe token with normalized email
                   const normalizedEmail = normalizeEmail(subscriber.email)
                   const secureToken = generateSecureUnsubscribeToken(normalizedEmail)
+
+                  // Debug: Log token generation to identify issues
+                  console.log('🔑 Token generation debug:', {
+                    email: `${normalizedEmail.substring(0, 3)}***`,
+                    tokenGenerated: !!secureToken,
+                    tokenLength: secureToken ? secureToken.length : 0,
+                    hasSecret: !!process.env.UNSUBSCRIBE_TOKEN_SECRET,
+                  })
+
                   const unsubscribeUrl = `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://dawan.africa'}/api/newsletter/unsubscribe?email=${encodeURIComponent(normalizedEmail)}&token=${encodeURIComponent(secureToken)}`
 
                   // Generate both HTML and text versions
