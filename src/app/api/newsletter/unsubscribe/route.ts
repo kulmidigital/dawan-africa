@@ -12,7 +12,7 @@ function normalizeEmail(email: string): string {
 function verifyUnsubscribeToken(email: string, token: string): boolean {
   const secret = process.env.UNSUBSCRIBE_TOKEN_SECRET
   if (!secret) {
-    console.error('UNSUBSCRIBE_TOKEN_SECRET environment variable is required')
+    console.error('❌ UNSUBSCRIBE_TOKEN_SECRET environment variable is required')
     return false
   }
 
@@ -218,8 +218,17 @@ export async function GET(req: NextRequest) {
   const email = url.searchParams.get('email')
   const token = url.searchParams.get('token')
 
+  // Debug logging to identify the issue
+  console.log('🔍 Unsubscribe GET request debug:', {
+    fullUrl: req.url,
+    email: email ? `${email.substring(0, 3)}***` : 'missing',
+    token: token ? `${token.substring(0, 10)}...` : 'missing',
+    allParams: Object.fromEntries(url.searchParams.entries()),
+  })
+
   // Basic validation
   if (!email || !token) {
+    console.log('❌ Missing required parameters:', { hasEmail: !!email, hasToken: !!token })
     return new Response(generateEmailNotFoundHTML(), {
       status: 400,
       headers: { 'Content-Type': 'text/html' },
@@ -232,6 +241,10 @@ export async function GET(req: NextRequest) {
 
     // Fix: Use secure token verification
     if (!verifyUnsubscribeToken(normalizedEmail, token)) {
+      console.log(
+        '❌ Token verification failed for email:',
+        `${normalizedEmail.substring(0, 3)}***`,
+      )
       return new Response(generateInvalidTokenHTML(), {
         status: 400,
         headers: { 'Content-Type': 'text/html' },
