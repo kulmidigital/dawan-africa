@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Generate a new verification token
+    // Generate a new verification token 
     const crypto = await import('crypto')
     const verificationToken = crypto.randomBytes(32).toString('hex')
 

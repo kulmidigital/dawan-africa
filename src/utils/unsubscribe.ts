@@ -21,7 +21,7 @@ function generateSecureToken(email: string): string {
   const normalizedEmail = normalizeEmail(email)
   const timestamp = Date.now().toString()
   const data = `${normalizedEmail}:${timestamp}`
-  const hmac = crypto.createHmac('sha256', SECRET!)
+  const hmac = crypto.createHmac('sha256', SECRET!) // Non-null assertion since we validate at startup
   hmac.update(data)
   const signature = hmac.digest('hex')
 
