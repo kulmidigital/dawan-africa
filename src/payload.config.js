@@ -76,10 +76,16 @@ export default buildConfig({
     url: process.env.DATABASE_URI ?? '',
   }),
   email: resendAdapter({
-    defaultFromAddress:'info@dawan.africa',
-    defaultFromName:'Dawan Africa',
+    defaultFromAddress: 'info@dawan.africa',
+    defaultFromName: 'Dawan Africa',
     apiKey: process.env.RESEND_API_KEY || '',
   }),
+  // Global upload configuration
+  upload: {
+    limits: {
+      fileSize: 300000000,
+    },
+  },
   sharp,
   plugins: [
     uploadthingStorage({
