@@ -50,7 +50,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   initialWeather,
   isInstallable,
   handleInstallClick,
-  formattedDate,
 }) => {
   const router = useRouter()
 
@@ -155,7 +154,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
             {/* Social Media */}
             <div className="px-3 py-2">
               <div className="text-sm text-gray-600 mb-2">Follow Us</div>
-              <SocialIcons />
+              <SocialIcons className="flex items-center space-x-4" iconSize={20} />
             </div>
 
             {/* PWA Install Button */}

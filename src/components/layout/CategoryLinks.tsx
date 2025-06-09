@@ -5,17 +5,8 @@ import Link from 'next/link'
 import { BlogCategory } from '@/payload-types'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-
-import { BiDotsHorizontalRounded } from 'react-icons/bi'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
+import { DropdownMenuLabel } from '@/components/ui/dropdown-menu'
 
 interface CategoryLinksProps {
   categories: BlogCategory[]
@@ -34,12 +25,8 @@ const prioritizedCategoryNames: string[] = [
   'Explainers',
 ]
 
-const MAX_VISIBLE_DYNAMIC_CATEGORIES_DESKTOP = 7
-
 const CategoryLinks: React.FC<CategoryLinksProps> = ({
   categories,
-  countries,
-  onCountrySelect,
   isMobile = false,
   onLinkClick,
 }) => {
@@ -58,7 +45,7 @@ const CategoryLinks: React.FC<CategoryLinksProps> = ({
   ) => {
     const commonClasses = isMobile
       ? 'px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#2aaac6] block'
-      : 'text-gray-700 hover:text-[#2aaac6] hover:bg-transparent rounded-md'
+      : 'text-gray-700 hover:text-[#2aaac6] hover:bg-transparent rounded-md whitespace-nowrap flex-shrink-0'
 
     const content = icon ? (
       <span className="flex items-center">
@@ -156,74 +143,38 @@ const CategoryLinks: React.FC<CategoryLinksProps> = ({
     )
   }
 
-  // Desktop view
-  const visibleDynamicCategories = orderedDynamicCategoriesData.slice(
-    0,
-    MAX_VISIBLE_DYNAMIC_CATEGORIES_DESKTOP,
-  )
-  const overflowDynamicCategories = orderedDynamicCategoriesData.slice(
-    MAX_VISIBLE_DYNAMIC_CATEGORIES_DESKTOP,
-  )
-
-  const desktopVisibleDynamicLinks = visibleDynamicCategories.map((cat) =>
+  // Desktop view - show all categories plus Blockchain at the end in a horizontal scrollable layout
+  const desktopDynamicLinks = orderedDynamicCategoriesData.map((cat) =>
     renderCategoryLinkNode(cat, false),
   )
 
+  const homeLink = renderLink('/', 'Home', undefined, true, 'desktop-home')
+  const blockchainLink = renderLink(
+    '/blockchain',
+    'Blockchain',
+    undefined,
+    true,
+    'desktop-blockchain',
+  )
+
+  // Loading skeleton for desktop
+  const skeletonLinks =
+    orderedDynamicCategoriesData.length === 0 && categories.length === 0
+      ? Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton
+            key={`desktop-no-cat-skeleton-${i}`}
+            className="h-9 w-20 rounded-md flex-shrink-0"
+          />
+        ))
+      : []
+
   return (
-    <>
-      {renderLink('/', 'Home', undefined, true, 'desktop-home')}
-
-      {desktopVisibleDynamicLinks}
-
-      {overflowDynamicCategories.length > 0 && (
-        <DropdownMenu key="desktop-more-dropdown">
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="text-gray-700 hover:text-[#2aaac6] hover:bg-transparent rounded-md flex items-center gap-1"
-            >
-              More
-              <BiDotsHorizontalRounded className="h-4 w-4 ml-1 opacity-75" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="min-w-[180px]">
-            <DropdownMenuLabel>More Links</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {overflowDynamicCategories.map((category) => (
-              <DropdownMenuItem key={category.id} asChild>
-                <Link
-                  href={`/categories/${category.slug}`}
-                  className="text-gray-700 hover:text-[#2aaac6]"
-                >
-                  {category.name}
-                </Link>
-              </DropdownMenuItem>
-            ))}
-
-            {overflowDynamicCategories.length > 0 && <DropdownMenuSeparator />}
-
-            <DropdownMenuItem key="more-blockchain" asChild>
-              <Link
-                href="/blockchain"
-                className="text-gray-700 hover:text-[#2aaac6] flex items-center"
-              >
-                Blockchain
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-
-      {orderedDynamicCategoriesData.length === 0 &&
-        categories.length === 0 &&
-        Array.from({ length: MAX_VISIBLE_DYNAMIC_CATEGORIES_DESKTOP }).map((_, i) => (
-          <Skeleton key={`desktop-no-cat-skeleton-${i}`} className="h-9 w-20 rounded-md" />
-        ))}
-
-      {!(overflowDynamicCategories.length > 0) && (
-        <>{renderLink('/blockchain', 'Blockchain', undefined, true, 'desktop-blockchain')}</>
-      )}
-    </>
+    <div className="flex items-center space-x-1 min-w-max">
+      {homeLink}
+      {desktopDynamicLinks}
+      {blockchainLink}
+      {skeletonLinks}
+    </div>
   )
 }
 

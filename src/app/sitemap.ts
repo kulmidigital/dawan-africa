@@ -54,12 +54,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  // Country-specific news pages (high priority for regional focus)
+  // Country-specific news pages
   const countryPages = countries.map((country) => ({
-    url: `${baseUrl}/news?search=${encodeURIComponent(country)}&searchField=name`,
+    url: `${baseUrl}/news?search=${encodeURIComponent(country)}&amp;searchField=name`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
-    priority: 1.0, // High priority since country news is core to your brand
+    priority: 1.0,
   }))
 
   // Dynamic blog posts - fetch from CMS

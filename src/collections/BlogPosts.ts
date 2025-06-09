@@ -185,6 +185,7 @@ const workflowAfterChangeHook: CollectionAfterChangeHook = async ({
 
 export const BlogPost: CollectionConfig = {
   slug: 'blogPosts',
+  defaultSort: '-createdAt',
   access: {
     create: createAccess,
     read: readAccess,

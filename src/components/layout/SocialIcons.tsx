@@ -3,16 +3,24 @@
 import React from 'react'
 import { BiLogoTwitter, BiLogoFacebook, BiLogoYoutube, BiLogoTiktok } from 'react-icons/bi'
 
-const SocialIcons: React.FC = () => {
+interface SocialIconsProps {
+  className?: string
+  iconSize?: number
+}
+
+const SocialIcons: React.FC<SocialIconsProps> = ({
+  className = 'hidden md:flex items-center space-x-4',
+  iconSize = 16,
+}) => {
   return (
-    <div className="hidden md:flex items-center space-x-4">
+    <div className={className}>
       <a
         href="https://youtube.com/@dawanafrica?si=MeDNmWJDGkFWiF45"
         target="_blank"
         rel="noopener noreferrer"
         className="text-gray-500 hover:text-[#2aaac6] transition-colors"
       >
-        <BiLogoYoutube size={16} />
+        <BiLogoYoutube size={iconSize} />
       </a>
       <a
         href="https://x.com/dawanafrica?s=11&t=cGgYbc_v8C1zcdmiZHSiRg"
@@ -20,7 +28,7 @@ const SocialIcons: React.FC = () => {
         rel="noopener noreferrer"
         className="text-gray-500 hover:text-[#2aaac6] transition-colors"
       >
-        <BiLogoTwitter size={16} />
+        <BiLogoTwitter size={iconSize} />
       </a>
       <a
         href="https://www.facebook.com/share/1DLeMnVa2e/?mibextid=wwXIfr"
@@ -28,7 +36,7 @@ const SocialIcons: React.FC = () => {
         rel="noopener noreferrer"
         className="text-gray-500 hover:text-[#2aaac6] transition-colors"
       >
-        <BiLogoFacebook size={16} />
+        <BiLogoFacebook size={iconSize} />
       </a>
       <a
         href="https://www.tiktok.com/@dawanafrica?_t=ZS-8wXUI4l8QKX&_r=1"
@@ -36,7 +44,7 @@ const SocialIcons: React.FC = () => {
         rel="noopener noreferrer"
         className="text-gray-500 hover:text-[#2aaac6] transition-colors"
       >
-        <BiLogoTiktok size={16} />
+        <BiLogoTiktok size={iconSize} />
       </a>
     </div>
   )
