@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSearchStore } from '@/store/searchStore'
@@ -19,6 +19,15 @@ const CountryTabs: React.FC<CountryTabsProps> = ({
 }) => {
   const { searchTerm, searchField } = useSearchStore()
   const [loadingCountry, setLoadingCountry] = useState<string | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   if (countries.length === 0) {
     return null
@@ -29,7 +38,7 @@ const CountryTabs: React.FC<CountryTabsProps> = ({
     onCountrySelect(country)
 
     // Clear loading state after a short delay to allow navigation
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setLoadingCountry(null)
     }, 1000)
   }

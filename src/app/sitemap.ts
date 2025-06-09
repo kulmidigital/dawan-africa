@@ -17,14 +17,19 @@ async function getAllPosts() {
 
 async function getAllCategories() {
   const payload = await getPayload({ config })
-  const categories = await payload.find({
-    collection: 'blogCategories',
-    limit: 10,
-  })
-  return categories.docs
+  try {
+    const categories = await payload.find({
+      collection: 'blogCategories',
+      limit: 100,
+    })
+    return categories.docs
+  } catch (error) {
+    console.error('Error fetching categories for sitemap:', error)
+    return []
+  }
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.url
 
   // Main pages with high priority
@@ -57,19 +62,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 1.0, // High priority since country news is core to your brand
   }))
 
-  // Category pages
-  const categories = [
-    'Politics',
-    'Business',
-    'Technology',
-    'Sports',
-    'Culture',
-    'Health',
-    'Environment',
-    'Education',
-  ]
+  // Dynamic blog posts - fetch from CMS
+  const posts = await getAllPosts()
+  const postPages = posts.map((post) => ({
+    url: `${baseUrl}/news/${post.slug}`,
+    lastModified: new Date(post.updatedAt),
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }))
+
+  // Dynamic category pages - fetch from CMS
+  const categories = await getAllCategories()
   const categoryPages = categories.map((category) => ({
-    url: `${baseUrl}/category/${category.toLowerCase()}`,
+    url: `${baseUrl}/categories/${category.slug}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
     priority: 0.8,
@@ -91,5 +96,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ]
 
-  return [...mainPages, ...countryPages, ...categoryPages, ...additionalPages]
+  return [...mainPages, ...countryPages, ...postPages, ...categoryPages, ...additionalPages]
 }

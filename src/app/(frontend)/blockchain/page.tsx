@@ -4,6 +4,7 @@ import { CryptoMarketsServer } from '@/components/markets/CryptoMarketsServer'
 import { getGlobalMarketData, getTrendingCoins, getMarketListings } from '@/lib/market-data'
 import { sharedMetadata } from '@/app/shared-metadata'
 import siteConfig from '@/app/shared-metadata'
+import ErrorFallback from '@/components/ErrorFallback'
 
 export const metadata: Metadata = {
   ...sharedMetadata,
@@ -79,23 +80,13 @@ export default async function MarketsPage({ searchParams }: Readonly<MarketPageP
   } catch (error) {
     console.error('Error loading market data:', error)
 
-    // Fallback UI in case of server-side errors
+    // Use separate Client Component for error UI to avoid hydration issues
     return (
       <main className="bg-gray-50 min-h-screen">
-        <div className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Market Data Unavailable</h1>
-            <p className="text-gray-600 mb-4">
-              We&apos;re having trouble loading the market data. Please try again later.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
+        <ErrorFallback
+          title="Market Data Unavailable"
+          message="We're having trouble loading the market data. Please try again later."
+        />
       </main>
     )
   }
