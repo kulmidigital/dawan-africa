@@ -3,11 +3,14 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import siteConfig from '@/app/shared-metadata'
 
+// List of countries we want to feature
+const countries = ['Somalia', 'Kenya', 'Djibouti', 'Ethiopia', 'Eritrea']
+
 async function getAllPosts() {
   const payload = await getPayload({ config })
   const posts = await payload.find({
     collection: 'blogPosts',
-    limit: 100,
+    limit: 5000,
   })
   return posts.docs
 }
@@ -21,19 +24,16 @@ async function getAllCategories() {
   return categories.docs
 }
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = siteConfig.url
 
-  // Get all posts and categories
-  const [posts, categories] = await Promise.all([getAllPosts(), getAllCategories()])
-
-  // Static routes
-  const staticRoutes = [
+  // Main pages with high priority
+  const mainPages = [
     {
       url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
-      priority: 1,
+      priority: 1.0,
     },
     {
       url: `${baseUrl}/news`,
@@ -42,28 +42,54 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/markets`,
+      url: `${baseUrl}/about`,
       lastModified: new Date(),
-      changeFrequency: 'hourly' as const,
-      priority: 0.9,
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
     },
   ]
 
-  // Dynamic routes for blog posts
-  const postRoutes = posts.map((post) => ({
-    url: `${baseUrl}/news/${post.slug}`,
-    lastModified: new Date(post.updatedAt),
-    changeFrequency: 'weekly' as const,
+  // Country-specific news pages (high priority for regional focus)
+  const countryPages = countries.map((country) => ({
+    url: `${baseUrl}/news?search=${encodeURIComponent(country)}&searchField=name`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 1.0, // High priority since country news is core to your brand
+  }))
+
+  // Category pages
+  const categories = [
+    'Politics',
+    'Business',
+    'Technology',
+    'Sports',
+    'Culture',
+    'Health',
+    'Environment',
+    'Education',
+  ]
+  const categoryPages = categories.map((category) => ({
+    url: `${baseUrl}/category/${category.toLowerCase()}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
     priority: 0.8,
   }))
 
-  // Dynamic routes for categories
-  const categoryRoutes = categories.map((category) => ({
-    url: `${baseUrl}/categories/${category.slug}`,
-    lastModified: new Date(category.updatedAt),
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }))
+  // Additional important pages
+  const additionalPages = [
+    {
+      url: `${baseUrl}/privacy-policy`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
+    },
+  ]
 
-  return [...staticRoutes, ...postRoutes, ...categoryRoutes]
+  return [...mainPages, ...countryPages, ...categoryPages, ...additionalPages]
 }

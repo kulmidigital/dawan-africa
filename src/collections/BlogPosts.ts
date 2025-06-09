@@ -308,7 +308,7 @@ export const BlogPost: CollectionConfig = {
       relationTo: 'users',
       label: 'Author',
       required: true,
-      maxDepth: 1,
+      maxDepth: 2,
       admin: {
         position: 'sidebar',
         allowCreate: false,

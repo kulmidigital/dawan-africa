@@ -7,8 +7,8 @@ export const RichText: Block = {
     singular: 'Rich Text',
     plural: 'Rich Text Blocks',
   },
-  fields: [
-    {
+    fields: [
+        {
       name: 'content',
       type: 'richText',
       label: 'Content',
@@ -22,7 +22,7 @@ export const RichText: Block = {
               },
             },
           }),
-        ],
+    ],
       }),
     },
   ],

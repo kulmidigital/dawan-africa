@@ -7,15 +7,15 @@ import siteConfig from '@/app/shared-metadata'
 
 export const metadata: Metadata = {
   ...sharedMetadata,
-  title: 'Markets | Dawan Africa - African Financial Markets & Analysis',
+  title: 'Blockchain | Dawan Africa - African Financial Markets & Analysis',
   description:
     'Track African financial markets, get real-time market data, expert analysis, and insights into African economies and business trends.',
   openGraph: {
     ...sharedMetadata.openGraph,
-    title: 'Markets | Dawan Africa - African Financial Markets & Analysis',
+    title: 'Blockchain | Dawan Africa - African Financial Markets & Analysis',
     description:
       'Track African financial markets, get real-time market data, expert analysis, and insights into African economies and business trends.',
-    url: new URL('/markets', siteConfig.url).toString(),
+    url: new URL('/blockchain', siteConfig.url).toString(),
     type: 'website',
     images: [
       {
@@ -28,13 +28,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     ...sharedMetadata.twitter,
-    title: 'Markets | Dawan Africa - African Financial Markets & Analysis',
+    title: 'Blockchain | Dawan Africa - African Financial Markets & Analysis',
     description:
       'Track African financial markets, get real-time market data, expert analysis, and insights into African economies and business trends.',
     images: ['/og-default.png'],
   },
   alternates: {
-    canonical: new URL('/markets', siteConfig.url).toString(),
+    canonical: new URL('/blockchain', siteConfig.url).toString(),
   },
 }
 

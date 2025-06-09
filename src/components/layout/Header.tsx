@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { format } from 'date-fns'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 
 // Replace Lucide icons with React Icons
 import { BiCalendar, BiSearch, BiMenu, BiX, BiDownload } from 'react-icons/bi'
@@ -17,6 +17,7 @@ import SocialIcons from './SocialIcons'
 import WeatherDisplay from './WeatherDisplay'
 import UserAuth from './UserAuth'
 import DesktopNav from './DesktopNav'
+import CountryTabs from './CountryTabs'
 import MobileSearch from './MobileSearch'
 import MobileMenu from './MobileMenu'
 
@@ -55,6 +56,7 @@ const getInitials = (name?: string | null, email?: string | null): string => {
 const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather = null }) => {
   const { user, isLoading: authLoading, logout: authLogout } = useAuth()
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   // Get searchTerm from store
   const { setSearchTerm, setSearchField } = useSearchStore()
@@ -83,6 +85,10 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather 
   const navigateToCountrySearch = (country: string) => {
     setSearchTerm(country)
     setSearchField('name')
+    const params = new URLSearchParams()
+    params.set('search', country)
+    params.set('searchField', 'name')
+    router.push(`/news?${params.toString()}`)
     setIsMenuOpen(false) // Close mobile menu
   }
 
@@ -230,6 +236,9 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather 
       {/* Row 2: Search and Categories (desktop) */}
       <DesktopNav categories={categories} countries={countries} />
 
+      {/* Row 3: Countries (both mobile and desktop) */}
+      <CountryTabs countries={countries} onCountrySelect={navigateToCountrySearch} />
+
       {/* Mobile search input */}
       <MobileSearch searchOpen={searchOpen} />
 
@@ -248,6 +257,13 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [], initialWeather 
         isInstallable={isInstallable}
         handleInstallClick={handleInstallClick}
         formattedDate={formattedDate}
+      />
+
+      {/* Countries for mobile - separate from menu */}
+      <CountryTabs
+        countries={countries}
+        onCountrySelect={navigateToCountrySearch}
+        isMobile={true}
       />
     </header>
   )

@@ -24,7 +24,7 @@ export default function CategoryNotFound() {
               <Button asChild variant="default" size="lg">
                 <Link href="/news">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Browse All News
+                  Browse News
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">

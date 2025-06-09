@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useTransition } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import React, { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ import { ArrowUpIcon, ArrowDownIcon, Star, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatCurrency, formatPercentage, formatNumber } from '@/utils/formatters'
-import type { MarketDataResult, CryptoCurrency } from '@/lib/market-data'
+import type { MarketDataResult } from '@/lib/market-data'
 
 interface MarketTableClientProps {
   initialData: MarketDataResult
@@ -46,7 +46,6 @@ export const MarketTableClient: React.FC<MarketTableClientProps> = ({
   const [isPending, startTransition] = useTransition()
 
   const router = useRouter()
-  const searchParams = useSearchParams()
   const itemsPerPage = 20
 
   // Update URL when filters change
@@ -57,7 +56,7 @@ export const MarketTableClient: React.FC<MarketTableClientProps> = ({
     if (newSort !== 'market_cap_desc') params.set('sort', newSort)
 
     const queryString = params.toString()
-    const newPath = queryString ? `/markets?${queryString}` : '/markets'
+    const newPath = queryString ? `/blockchain?${queryString}` : '/blockchain'
 
     startTransition(() => {
       router.push(newPath)
@@ -109,14 +108,6 @@ export const MarketTableClient: React.FC<MarketTableClientProps> = ({
     setPage(newPage)
     updateURL(newPage, searchTerm, sortBy)
     fetchData(newPage, searchTerm, sortBy)
-  }
-
-  // Handle sorting
-  const handleSort = (newSort: string) => {
-    setSortBy(newSort)
-    setPage(1)
-    updateURL(1, searchTerm, newSort)
-    fetchData(1, searchTerm, newSort)
   }
 
   const toggleFavorite = (id: number) => {

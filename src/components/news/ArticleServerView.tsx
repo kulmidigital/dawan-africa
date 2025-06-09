@@ -8,6 +8,9 @@ import { BackToTopButton } from './BackToTopButton'
 import { AudioTrigger } from '@/components/audio/AudioTrigger'
 import type { AudioTrack } from '@/contexts/AudioPlayerContext'
 import Link from 'next/link'
+import Image from 'next/image'
+import { UserCircle } from 'lucide-react'
+import { getAuthorName, getAuthorRole } from '@/utils/postUtils'
 
 interface ArticleServerViewProps {
   post: BlogPost
@@ -35,26 +38,73 @@ export const ArticleServerView: React.FC<ArticleServerViewProps> = ({
         {/* Article Content Container */}
         <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 relative">
           <div className="max-w-3xl mx-auto bg-white rounded-t-2xl -mt-2 sm:-mt-10 pt-6 sm:pt-10 pb-8 sm:pb-16 px-4 sm:px-8 md:px-12 shadow-sm relative z-10 article-content">
-            {/* Audio Player Section */}
-            {post.audioUrl && (
-              <div className="mb-6 sm:mb-8">
-                <AudioTrigger
-                  track={
-                    {
-                      id: post.id,
-                      title: post.name,
-                      src: post.audioUrl,
-                      articleSlug: post.slug,
-                    } as AudioTrack
-                  }
-                  variant="button"
-                  size="lg"
-                  className="mx-auto"
-                >
-                  Listen to Article
-                </AudioTrigger>
+            {/* Author Information and Audio Player Section */}
+            <div className="mb-6 sm:mb-8 pb-6 border-b border-gray-100">
+              <div className="flex flex-row items-center justify-between w-full sm:justify-start sm:gap-4">
+                {/* Audio Player Section */}
+                {post.audioUrl && (
+                  <div className="flex-shrink-0">
+                    <AudioTrigger
+                      track={
+                        {
+                          id: post.id,
+                          title: post.name,
+                          src: post.audioUrl,
+                          articleSlug: post.slug,
+                        } as AudioTrack
+                      }
+                      variant="button"
+                      size="sm"
+                      className="flex-shrink-0 text-xs px-2 py-1 sm:text-sm sm:px-3 sm:py-2"
+                    >
+                      Listen
+                    </AudioTrigger>
+                  </div>
+                )}
+
+                {/* Author Information */}
+                <div className="flex items-center min-w-0 ml-4 sm:ml-0 flex-1">
+                  {/* Author Profile Picture or Icon */}
+                  <div className="mr-1 sm:mr-2 flex-shrink-0">
+                    {(() => {
+                      try {
+                        // Get profile picture URL if it exists
+                        let profilePictureUrl = null
+
+                        if (post.author && typeof post.author === 'object') {
+                          const author = post.author as any
+                          if (author.profilePicture && typeof author.profilePicture === 'object') {
+                            profilePictureUrl = author.profilePicture.url
+                          }
+                        }
+
+                        if (profilePictureUrl) {
+                          return (
+                            <div className="relative w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden">
+                              <Image
+                                src={profilePictureUrl}
+                                alt={`${getAuthorName(post.author)} profile picture`}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 640px) 24px, 28px"
+                              />
+                            </div>
+                          )
+                        }
+                      } catch (error) {
+                        // Silent fallback - no logging
+                      }
+
+                      // Always fallback to icon
+                      return <UserCircle className="h-6 w-6 sm:h-7 sm:w-7 text-[#2aaac6]" />
+                    })()}
+                  </div>
+                  <span className="font-medium text-gray-900 text-sm sm:text-base truncate">
+                    By {getAuthorName(post.author)} - {getAuthorRole(post.author)}
+                  </span>
+                </div>
               </div>
-            )}
+            </div>
 
             {/* Main Content - Render Blocks */}
             {post.layout && post.layout.length > 0 ? (

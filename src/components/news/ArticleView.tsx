@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { BlogPost as PayloadBlogPost, User as PayloadUser } from '@/payload-types'
+import Image from 'next/image'
 import { BlockRenderer } from './BlockRenderer'
 import { ArticleHeader } from './ArticleHeader'
-import { Bookmark, ThumbsUp, Loader2 } from 'lucide-react'
+import { Bookmark, ThumbsUp, Loader2, UserCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { RelatedArticles } from './RelatedArticles'
@@ -13,6 +14,7 @@ import { getRelatedPostsForView } from '@/utils/relatedPostsApi'
 import { SharePopover } from './SharePopover'
 import { AudioTrigger } from '@/components/audio/AudioTrigger'
 import type { AudioTrack } from '@/contexts/AudioPlayerContext'
+import { getAuthorName, getAuthorRole } from '@/utils/postUtils'
 
 // Use the original types from payload-types
 type BlogPost = PayloadBlogPost
@@ -242,6 +244,50 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
         {/* Article Content Container */}
         <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 relative">
           <div className="max-w-3xl mx-auto bg-white rounded-t-2xl -mt-2 sm:-mt-10 pt-6 sm:pt-10 pb-8 sm:pb-16 px-4 sm:px-8 md:px-12 shadow-sm relative z-10 article-content">
+            {/* Author Information */}
+            <div className="mb-6 sm:mb-8 pb-6 border-b border-gray-100">
+              <div className="flex items-center">
+                {/* Author Profile Picture or Icon */}
+                <div className="mr-3 flex-shrink-0">
+                  {(() => {
+                    try {
+                      // Get profile picture URL if it exists
+                      let profilePictureUrl = null
+
+                      if (post.author && typeof post.author === 'object') {
+                        const author = post.author as any
+                        if (author.profilePicture && typeof author.profilePicture === 'object') {
+                          profilePictureUrl = author.profilePicture.url
+                        }
+                      }
+
+                      if (profilePictureUrl) {
+                        return (
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                            <Image
+                              src={profilePictureUrl}
+                              alt={`${getAuthorName(post.author)} profile picture`}
+                              fill
+                              className="object-cover"
+                              sizes="40px"
+                            />
+                          </div>
+                        )
+                      }
+                    } catch (error) {
+                      console.log('Error rendering profile picture:', error)
+                    }
+
+                    // Always fallback to icon
+                    return <UserCircle className="h-10 w-10 text-[#2aaac6]" />
+                  })()}
+                </div>
+                <span className="font-medium text-gray-900">
+                  By {getAuthorName(post.author)} - {getAuthorRole(post.author)}
+                </span>
+              </div>
+            </div>
+
             {/* Audio Player Section */}
             {post.audioUrl && (
               <div className="mb-6 sm:mb-8">

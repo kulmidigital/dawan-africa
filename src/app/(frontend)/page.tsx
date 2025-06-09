@@ -12,18 +12,22 @@ import siteConfig from '@/app/shared-metadata'
 
 export const metadata: Metadata = {
   ...sharedMetadata,
+  title: 'Dawan Africa - Uncovering the Continent Through Its Own Lens',
   openGraph: {
     ...sharedMetadata.openGraph,
-    title: 'Home | Dawan Africa - Uncovering the Continent Through Its Own Lens',
+    title: 'Dawan Africa - Uncovering the Continent Through Its Own Lens',
     description:
       'Discover the latest news, stories, and insights from across Africa. Your trusted source for African perspectives on politics, culture, business, and more.',
     type: 'website',
+    url: siteConfig.url,
+    siteName: 'Dawan Africa',
   },
   twitter: {
     ...sharedMetadata.twitter,
-    title: 'Home | Dawan Africa - Uncovering the Continent Through Its Own Lens',
+    title: 'Dawan Africa - Uncovering the Continent Through Its Own Lens',
     description:
       'Discover the latest news, stories, and insights from across Africa. Your trusted source for African perspectives on politics, culture, business, and more.',
+    site: '@dawanafrica',
   },
   alternates: {
     canonical: new URL('/', siteConfig.url).toString(),
@@ -44,7 +48,7 @@ export default async function HomePage() {
     sort: '-createdAt',
     depth: 2,
     where: {
-      status: { equals: 'published' }, 
+      status: { equals: 'published' },
     },
   })
 
