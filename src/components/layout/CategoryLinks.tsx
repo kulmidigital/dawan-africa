@@ -138,6 +138,7 @@ const CategoryLinks: React.FC<CategoryLinksProps> = ({
 
         <Separator className="my-2" />
 
+        {renderLink('/podcasts', 'Podcasts', undefined, false, 'mobile-podcasts')}
         {renderLink('/blockchain', 'Blockchain', undefined, false, 'mobile-blockchain')}
       </>
     )
@@ -149,6 +150,7 @@ const CategoryLinks: React.FC<CategoryLinksProps> = ({
   )
 
   const homeLink = renderLink('/', 'Home', undefined, true, 'desktop-home')
+  const podcastsLink = renderLink('/podcasts', 'Podcasts', undefined, true, 'desktop-podcasts')
   const blockchainLink = renderLink(
     '/blockchain',
     'Blockchain',
@@ -169,9 +171,10 @@ const CategoryLinks: React.FC<CategoryLinksProps> = ({
       : []
 
   return (
-    <div className="flex items-center space-x-1 min-w-max">
+    <div className="flex items-center  min-w-max">
       {homeLink}
       {desktopDynamicLinks}
+      {podcastsLink}
       {blockchainLink}
       {skeletonLinks}
     </div>

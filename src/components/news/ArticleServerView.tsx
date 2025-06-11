@@ -10,7 +10,7 @@ import type { AudioTrack } from '@/contexts/AudioPlayerContext'
 import Link from 'next/link'
 import Image from 'next/image'
 import { UserCircle } from 'lucide-react'
-import { getAuthorName, getAuthorRole } from '@/utils/postUtils'
+import { getPostAuthorName, getPostAuthorRole } from '@/utils/postUtils'
 
 interface ArticleServerViewProps {
   post: BlogPost
@@ -83,7 +83,7 @@ export const ArticleServerView: React.FC<ArticleServerViewProps> = ({
                             <div className="relative w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden">
                               <Image
                                 src={profilePictureUrl}
-                                alt={`${getAuthorName(post.author)} profile picture`}
+                                alt={`${getPostAuthorName(post)} profile picture`}
                                 fill
                                 className="object-cover"
                                 sizes="(max-width: 640px) 24px, 28px"
@@ -100,7 +100,7 @@ export const ArticleServerView: React.FC<ArticleServerViewProps> = ({
                     })()}
                   </div>
                   <span className="font-medium text-gray-900 text-sm sm:text-base truncate">
-                    By {getAuthorName(post.author)} - {getAuthorRole(post.author)}
+                    By {getPostAuthorName(post)} - {getPostAuthorRole(post)}
                   </span>
                 </div>
               </div>

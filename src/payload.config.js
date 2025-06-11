@@ -12,9 +12,11 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { BlogPost } from './collections/BlogPosts'
 import { BlogCategories } from './collections/BlogCategories'
+import { Podcasts } from './collections/Podcasts'
 import { Staging } from './collections/Staging'
 import { Newsletter } from './collections/Newsletter'
 import { NewsletterCampaigns } from './collections/NewsletterCampaigns'
+import { PodcastSeries } from './collections/PodcastSeries'
 
 /* -------------------------------------------------------------------------- */
 /*                                  Helpers                                   */
@@ -62,7 +64,17 @@ export default buildConfig({
   },
 
   /* ------------------------------- Content ------------------------------- */
-  collections: [Users, Media, BlogPost, BlogCategories, Staging, Newsletter, NewsletterCampaigns],
+  collections: [
+    Users,
+    Media,
+    BlogPost,
+    BlogCategories,
+    Podcasts,
+    Staging,
+    Newsletter,
+    NewsletterCampaigns,
+    PodcastSeries,
+  ],
   editor: lexicalEditor(),
 
   /* ----------------------------- Misc settings ---------------------------- */
@@ -76,7 +88,7 @@ export default buildConfig({
     url: process.env.DATABASE_URI ?? '',
     /**
      * Disable long‑running multi‑collection transactions so that large
-     * uploads do not time‑out with `NoSuchTransaction` (code 251).
+     * uploads do not time‑out with `NoSuchTransaction` (code 251).
      * If you need ACID transactions elsewhere, set this to `true` and add
      * `disableTransaction: true` only to the Media create hook instead.
      */
@@ -99,7 +111,7 @@ export default buildConfig({
   /* ---------------------- Global Payload upload limit --------------------- */
   upload: {
     limits: {
-      fileSize: 300_000_000, // 300 MB in bytes
+      fileSize: 300_000_000, // 300 MB in bytes
     },
   },
 
@@ -129,6 +141,7 @@ export default buildConfig({
          */
         routerInputConfig: {
           video: { maxFileSize: '300MB' },
+          audio: { maxFileSize: '500MB' }, // Support large podcast files
           blob: { maxFileSize: '300MB' },
           pdf: { maxFileSize: '100MB' },
           image: { maxFileSize: '20MB' },

@@ -5,10 +5,9 @@ import { ArrowRight, Calendar } from 'lucide-react'
 import Image from 'next/image'
 
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
-import { getPostImageFromLayout, getPostExcerpt, getAuthorDisplayName } from '@/utils/postUtils'
+import { getPostImageFromLayout, getPostExcerpt, getPostAuthorDisplayName } from '@/utils/postUtils'
 import { formatTimeAgo } from '@/utils/dateUtils'
 
 interface MainFeaturedPostDisplayProps {
@@ -20,7 +19,7 @@ export const MainFeaturedPostDisplay: React.FC<MainFeaturedPostDisplayProps> = (
 
   const imageUrl = getPostImageFromLayout(post.layout)
   const excerpt = getPostExcerpt(post, { maxLength: 180, prioritizeCoverSubheading: false })
-  const authorName = getAuthorDisplayName(post.author)
+  const authorName = getPostAuthorDisplayName(post)
 
   return (
     <div className="lg:col-span-5">

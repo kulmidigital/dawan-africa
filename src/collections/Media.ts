@@ -27,10 +27,11 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    // Allow images, videos, and PDF files
+    // Allow images, videos, audio files, and PDF files
     mimeTypes: [
       'image/*',
       'video/*',
+      'audio/*',
       'application/pdf',
       // Specific video formats for better browser support
       'video/mp4',
@@ -40,6 +41,14 @@ export const Media: CollectionConfig = {
       'video/ogg',
       'video/avi',
       'video/mov',
+      // Specific audio formats for podcasts
+      'audio/mpeg',
+      'audio/mp3',
+      'audio/wav',
+      'audio/ogg',
+      'audio/aac',
+      'audio/m4a',
+      'audio/flac',
     ],
     // For images, generate thumbnails
     imageSizes: [
@@ -85,6 +94,11 @@ export const Media: CollectionConfig = {
           if (mimetype === 'application/pdf' && size > 50000000) {
             // 50MB for PDFs
             throw new Error('PDF files must be smaller than 50MB')
+          }
+
+          if (mimetype?.startsWith('audio/') && size > 500000000) {
+            // 500MB for audio files (podcasts can be large)
+            throw new Error('Audio files must be smaller than 500MB')
           }
         }
       },

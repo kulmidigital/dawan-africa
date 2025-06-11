@@ -7,7 +7,7 @@ import { ArrowRight, Clock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-import { getPostImageFromLayout, getPostExcerpt, getAuthorDisplayName } from '@/utils/postUtils'
+import { getPostImageFromLayout, getPostExcerpt, getPostAuthorDisplayName } from '@/utils/postUtils'
 import { formatTimeAgo } from '@/utils/dateUtils'
 
 interface TopPostsProps {
@@ -22,7 +22,7 @@ export const TopPosts: React.FC<TopPostsProps> = ({ posts }) => {
       {posts.map((post) => {
         const imageUrl = getPostImageFromLayout(post.layout)
         const excerpt = getPostExcerpt(post, { maxLength: 100, prioritizeCoverSubheading: false })
-        const authorName = getAuthorDisplayName(post.author)
+        const authorName = getPostAuthorDisplayName(post)
 
         return (
           <Card

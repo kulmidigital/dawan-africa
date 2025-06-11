@@ -86,7 +86,6 @@ export const getAuthorDisplayName = (author: BlogPost['author']): string => {
   return 'Unknown Author'
 }
 
-
 /**
  * Gets the author's full name from a BlogPost.
  * @param author - The author object or ID from a BlogPost.
@@ -140,4 +139,62 @@ export const getAuthorRole = (author: BlogPost['author']): string => {
     }
   }
   return 'Contributor'
+}
+
+/**
+ * Gets the post author's full name, prioritizing manual reporter if enabled.
+ * @param post - The complete BlogPost object.
+ * @returns The author's full name or 'Unknown Author'.
+ */
+export const getPostAuthorName = (post: BlogPost): string => {
+  // Check for manual reporter first
+  if (post.useManualReporter && post.manualReporter?.name) {
+    return post.manualReporter.name
+  }
+
+  // Fall back to regular author
+  return getAuthorName(post.author)
+}
+
+/**
+ * Gets the post author's role, prioritizing manual reporter if enabled.
+ * @param post - The complete BlogPost object.
+ * @returns The author's role with proper capitalization.
+ */
+export const getPostAuthorRole = (post: BlogPost): string => {
+  // Check for manual reporter first
+  if (post.useManualReporter && post.manualReporter?.role) {
+    // Map manual reporter role values to display labels
+    const roleMapping: Record<string, string> = {
+      reporter: 'Reporter',
+      correspondent: 'Correspondent',
+      freelance: 'Freelance Journalist',
+      contributor: 'Contributing Writer',
+      'special-correspondent': 'Special Correspondent',
+      'field-reporter': 'Field Reporter',
+      investigative: 'Investigative Journalist',
+      analyst: 'News Analyst',
+    }
+
+    return roleMapping[post.manualReporter.role] || post.manualReporter.role
+  }
+
+  // Fall back to regular author
+  return getAuthorRole(post.author)
+}
+
+/**
+ * Gets the post author's display name, prioritizing manual reporter if enabled.
+ * Similar to getAuthorDisplayName but works with the full post object.
+ * @param post - The complete BlogPost object.
+ * @returns The author's display name.
+ */
+export const getPostAuthorDisplayName = (post: BlogPost): string => {
+  // Check for manual reporter first
+  if (post.useManualReporter && post.manualReporter?.name) {
+    return post.manualReporter.name
+  }
+
+  // Fall back to regular author
+  return getAuthorDisplayName(post.author)
 }

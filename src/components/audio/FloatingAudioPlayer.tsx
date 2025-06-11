@@ -75,9 +75,17 @@ export const FloatingAudioPlayer: React.FC = () => {
       if (shouldAutoPlayRef.current) {
         shouldAutoPlayRef.current = false // Reset the flag
         try {
-          await audio.play()
+          // Small delay to ensure audio is ready
+          setTimeout(async () => {
+            if (audio && !audio.paused) return
+            await audio.play()
+          }, 100)
         } catch (error) {
-          console.error('Auto-play failed:', error)
+          if (error instanceof Error && error.name === 'AbortError') {
+            console.log('Play request was interrupted - this is normal')
+          } else {
+            console.error('Auto-play failed:', error)
+          }
         }
       }
     }
@@ -89,8 +97,21 @@ export const FloatingAudioPlayer: React.FC = () => {
     audio.addEventListener('ended', handleEnded)
     audio.addEventListener('canplay', handleCanPlay)
 
-    // Set the audio source
+    // Set the audio source and start playing immediately if requested
     audio.src = currentTrack.src
+
+    if (shouldAutoPlayRef.current) {
+      // Try to start playback right away. The browser will buffer just enough to begin.
+      ;(async () => {
+        try {
+          await audio.play()
+          shouldAutoPlayRef.current = false // reset only after successful play
+        } catch (err) {
+          // If playback cannot start yet (e.g., iOS Requires user gesture), keep fallback listener
+          console.debug('Auto-play attempt pending, will retry on canplay:', err)
+        }
+      })()
+    }
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate)
@@ -139,10 +160,13 @@ export const FloatingAudioPlayer: React.FC = () => {
     return null
   }
 
+  // Show playing indicator immediately if auto-play has been requested
+  const isActive = isPlaying || shouldAutoPlayRef.current
+
   return (
     <>
-      {/* Hidden audio element */}
-      <audio ref={audioRef} />
+      {/* Hidden audio element (only fetch metadata until user interacts) */}
+      <audio ref={audioRef} preload="metadata" />
 
       {/* Floating Player */}
       <div
@@ -157,7 +181,7 @@ export const FloatingAudioPlayer: React.FC = () => {
               onClick={togglePlayPause}
               className="w-12 h-12 flex items-center justify-center bg-[#2aaac6] hover:bg-[#238ca3] text-white rounded-lg transition-colors"
             >
-              {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
+              {isActive ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
             </button>
             <button
               onClick={toggleMinimize}
@@ -240,7 +264,7 @@ export const FloatingAudioPlayer: React.FC = () => {
                   onClick={togglePlayPause}
                   className="w-10 h-10 flex items-center justify-center bg-[#2aaac6] hover:bg-[#238ca3] text-white rounded-full transition-colors"
                 >
-                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+                  {isActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
                 </button>
 
                 <button

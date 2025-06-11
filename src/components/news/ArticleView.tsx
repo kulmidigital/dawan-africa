@@ -14,7 +14,7 @@ import { getRelatedPostsForView } from '@/utils/relatedPostsApi'
 import { SharePopover } from './SharePopover'
 import { AudioTrigger } from '@/components/audio/AudioTrigger'
 import type { AudioTrack } from '@/contexts/AudioPlayerContext'
-import { getAuthorName, getAuthorRole } from '@/utils/postUtils'
+import { getPostAuthorName, getPostAuthorRole } from '@/utils/postUtils'
 
 // Use the original types from payload-types
 type BlogPost = PayloadBlogPost
@@ -266,7 +266,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                           <div className="relative w-10 h-10 rounded-full overflow-hidden">
                             <Image
                               src={profilePictureUrl}
-                              alt={`${getAuthorName(post.author)} profile picture`}
+                              alt={`${getPostAuthorName(post)} profile picture`}
                               fill
                               className="object-cover"
                               sizes="40px"
@@ -283,7 +283,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                   })()}
                 </div>
                 <span className="font-medium text-gray-900">
-                  By {getAuthorName(post.author)} - {getAuthorRole(post.author)}
+                  By {getPostAuthorName(post)} - {getPostAuthorRole(post)}
                 </span>
               </div>
             </div>

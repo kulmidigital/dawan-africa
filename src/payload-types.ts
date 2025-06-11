@@ -71,9 +71,11 @@ export interface Config {
     media: Media;
     blogPosts: BlogPost;
     blogCategories: BlogCategory;
+    podcasts: Podcast;
     staging: Staging;
     newsletter: Newsletter;
     newsletterCampaigns: NewsletterCampaign;
+    podcastSeries: PodcastSery;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -84,9 +86,11 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     blogPosts: BlogPostsSelect<false> | BlogPostsSelect<true>;
     blogCategories: BlogCategoriesSelect<false> | BlogCategoriesSelect<true>;
+    podcasts: PodcastsSelect<false> | PodcastsSelect<true>;
     staging: StagingSelect<false> | StagingSelect<true>;
     newsletter: NewsletterSelect<false> | NewsletterSelect<true>;
     newsletterCampaigns: NewsletterCampaignsSelect<false> | NewsletterCampaignsSelect<true>;
+    podcastSeries: PodcastSeriesSelect<false> | PodcastSeriesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -346,9 +350,31 @@ export interface BlogPost {
     | null;
   categories?: (string | BlogCategory)[] | null;
   /**
+   * Check this to manually enter reporter details instead of selecting a user account.
+   */
+  useManualReporter?: boolean | null;
+  /**
+   * Enter the details of the external reporter for this article.
+   */
+  manualReporter?: {
+    /**
+     * Full name of the reporter
+     */
+    name: string;
+    role:
+      | 'reporter'
+      | 'correspondent'
+      | 'freelance'
+      | 'contributor'
+      | 'special-correspondent'
+      | 'field-reporter'
+      | 'investigative'
+      | 'analyst';
+  };
+  /**
    * Select an author from content creators and admins. Regular users are excluded.
    */
-  author: string | User;
+  author?: (string | null) | User;
   likes?: number | null;
   favoritesCount?: number | null;
   views?: number | null;
@@ -368,6 +394,107 @@ export interface BlogCategory {
   id: string;
   name: string;
   slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage podcast episodes and series.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcasts".
+ */
+export interface Podcast {
+  id: string;
+  title: string;
+  /**
+   * This is automatically generated from the title.
+   */
+  slug: string;
+  /**
+   * A brief description of the podcast episode or content.
+   */
+  description: string;
+  /**
+   * Upload the audio file for this podcast.
+   */
+  audioFile: string | Media;
+  /**
+   * Select a podcast series (leave blank for standalone episode).
+   */
+  series?: (string | null) | PodcastSery;
+  /**
+   * Auto-incremented episode number within the selected series.
+   */
+  episodeNumber?: number | null;
+  /**
+   * Duration of the podcast in seconds (auto-detected).
+   */
+  duration?: number | null;
+  /**
+   * Select relevant categories for this podcast.
+   */
+  categories?: (string | BlogCategory)[] | null;
+  /**
+   * List of people involved in this podcast (hosts, guests, etc.).
+   */
+  peopleInvolved?:
+    | {
+        name: string;
+        role: 'host' | 'co-host' | 'guest' | 'interviewer' | 'producer' | 'editor' | 'sound-engineer' | 'moderator';
+        /**
+         * Optional brief bio or description of this person.
+         */
+        bio?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Cover image for this podcast episode.
+   */
+  coverImage?: (string | null) | Media;
+  /**
+   * When this podcast was published.
+   */
+  publishedAt?: string | null;
+  /**
+   * Whether this podcast is visible to the public.
+   */
+  isPublished?: boolean | null;
+  /**
+   * Mark as featured to highlight this podcast.
+   */
+  featured?: boolean | null;
+  /**
+   * Number of times this podcast has been played.
+   */
+  playCount?: number | null;
+  /**
+   * Number of likes this podcast has received.
+   */
+  likes?: number | null;
+  /**
+   * Links mentioned in the podcast or related resources.
+   */
+  externalLinks?:
+    | {
+        title: string;
+        url: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcastSeries".
+ */
+export interface PodcastSery {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -502,6 +629,10 @@ export interface PayloadLockedDocument {
         value: string | BlogCategory;
       } | null)
     | ({
+        relationTo: 'podcasts';
+        value: string | Podcast;
+      } | null)
+    | ({
         relationTo: 'staging';
         value: string | Staging;
       } | null)
@@ -512,6 +643,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'newsletterCampaigns';
         value: string | NewsletterCampaign;
+      } | null)
+    | ({
+        relationTo: 'podcastSeries';
+        value: string | PodcastSery;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -694,6 +829,13 @@ export interface BlogPostsSelect<T extends boolean = true> {
             };
       };
   categories?: T;
+  useManualReporter?: T;
+  manualReporter?:
+    | T
+    | {
+        name?: T;
+        role?: T;
+      };
   author?: T;
   likes?: T;
   favoritesCount?: T;
@@ -710,6 +852,44 @@ export interface BlogPostsSelect<T extends boolean = true> {
 export interface BlogCategoriesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcasts_select".
+ */
+export interface PodcastsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  audioFile?: T;
+  series?: T;
+  episodeNumber?: T;
+  duration?: T;
+  categories?: T;
+  peopleInvolved?:
+    | T
+    | {
+        name?: T;
+        role?: T;
+        bio?: T;
+        id?: T;
+      };
+  coverImage?: T;
+  publishedAt?: T;
+  isPublished?: T;
+  featured?: T;
+  playCount?: T;
+  likes?: T;
+  externalLinks?:
+    | T
+    | {
+        title?: T;
+        url?: T;
+        description?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -779,6 +959,17 @@ export interface NewsletterCampaignsSelect<T extends boolean = true> {
   sentCount?: T;
   failedCount?: T;
   errorLog?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcastSeries_select".
+ */
+export interface PodcastSeriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
   updatedAt?: T;
   createdAt?: T;
 }

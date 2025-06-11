@@ -136,8 +136,16 @@ const BlogPostPreview: UIFieldClientComponent = () => {
 
   const contentPreview = getContentPreview(blogPost.layout)
 
-  // Safely get author information
-  const getAuthorName = (author: BlogPost['author']): string => {
+  // Safely get author information, prioritizing manual reporter
+  const getAuthorDisplayInfo = (post: BlogPost): string => {
+    // Check for manual reporter first
+    if (post.useManualReporter && post.manualReporter?.name) {
+      const role = post.manualReporter.role ? ` (${post.manualReporter.role})` : ''
+      return `${post.manualReporter.name}${role}`
+    }
+
+    // Fall back to regular author
+    const author = post.author
     if (typeof author === 'string') {
       return 'Author ID: ' + author
     }
@@ -147,7 +155,7 @@ const BlogPostPreview: UIFieldClientComponent = () => {
     return 'Unknown Author'
   }
 
-  const authorName = getAuthorName(blogPost.author)
+  const authorName = getAuthorDisplayInfo(blogPost)
 
   return (
     <div className="field-type ui">

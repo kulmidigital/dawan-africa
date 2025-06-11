@@ -193,6 +193,21 @@ export const BlogPost: CollectionConfig = {
     delete: deleteAccess,
   },
   hooks: {
+    beforeValidate: [
+      ({ data }) => {
+        // Ensure either author or manual reporter is provided
+        const hasAuthor = data?.author
+        const hasManualReporter = data?.useManualReporter && data?.manualReporter?.name
+
+        if (!hasAuthor && !hasManualReporter) {
+          throw new Error(
+            'Either an author must be selected or manual reporter information must be provided',
+          )
+        }
+
+        return data
+      },
+    ],
     afterChange: [workflowAfterChangeHook, generateAudioAfterChange],
     beforeDelete: [deleteAudioBeforeDelete],
   },
@@ -229,7 +244,7 @@ export const BlogPost: CollectionConfig = {
         position: 'sidebar',
         readOnly: true,
         description: 'Current status of your post. Contact an admin to change this.',
-        condition: (data, siblingData, { user }) => {
+        condition: (_data, _siblingData, { user }) => {
           // Show this read-only field for content creators
           return !isAdmin(user)
         },
@@ -259,7 +274,7 @@ export const BlogPost: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'Change the publication status of this post.',
-        condition: (data, siblingData, { user }) => {
+        condition: (_data, _siblingData, { user }) => {
           // Show this editable field for admins only
           return isAdmin(user)
         },
@@ -304,17 +319,83 @@ export const BlogPost: CollectionConfig = {
       },
     },
     {
+      name: 'useManualReporter',
+      type: 'checkbox',
+      label: 'Use Manual Reporter Info',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description:
+          'Check this to manually enter reporter details instead of selecting a user account.',
+        condition: (_data, _siblingData, { user }) => {
+          // Only show this option to admins
+          return isAdmin(user)
+        },
+      },
+      access: {
+        create: ({ req }) => isAdmin(req.user),
+        update: ({ req }) => isAdmin(req.user),
+      },
+    },
+    {
+      name: 'manualReporter',
+      type: 'group',
+      label: 'Reporter Details',
+      admin: {
+        position: 'sidebar',
+        description: 'Enter the details of the external reporter for this article.',
+        condition: (data, _siblingData, { user }) => {
+          // Only show when manual reporter is enabled and user is admin
+          return isAdmin(user) && data?.useManualReporter
+        },
+      },
+      access: {
+        create: ({ req }) => isAdmin(req.user),
+        update: ({ req }) => isAdmin(req.user),
+      },
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          label: 'Reporter Name',
+          required: true,
+          admin: {
+            description: 'Full name of the reporter',
+          },
+        },
+        {
+          name: 'role',
+          type: 'select',
+          label: 'Reporter Role',
+          options: [
+            { label: 'Reporter', value: 'reporter' },
+            { label: 'Correspondent', value: 'correspondent' },
+            { label: 'Freelance Journalist', value: 'freelance' },
+            { label: 'Contributing Writer', value: 'contributor' },
+            { label: 'Special Correspondent', value: 'special-correspondent' },
+            { label: 'Field Reporter', value: 'field-reporter' },
+            { label: 'Investigative Journalist', value: 'investigative' },
+            { label: 'News Analyst', value: 'analyst' },
+          ],
+          defaultValue: 'reporter',
+          required: true,
+        },
+      ],
+    },
+    {
       name: 'author',
       type: 'relationship',
       relationTo: 'users',
       label: 'Author',
-      required: true,
-      maxDepth: 2,
       admin: {
         position: 'sidebar',
         allowCreate: false,
         description:
           'Select an author from content creators and admins. Regular users are excluded.',
+        condition: (data, _siblingData, _user) => {
+          // Only show when NOT using manual reporter
+          return !data?.useManualReporter
+        },
       },
       filterOptions: () => {
         // Exclude users who only have the 'user' role
@@ -364,14 +445,19 @@ export const BlogPost: CollectionConfig = {
           return false
         },
       },
-      // Even safer: always override for content creators
+      // Only override author for content creators when they're the ones making the change
       hooks: {
         beforeChange: [
-          ({ req }) => {
+          ({ req, data }) => {
             const user = req.user
-            if (isContentCreator(user)) {
+            // Only auto-set author if:
+            // 1. The current user is a content creator (not an admin)
+            // 2. AND they're trying to set someone else as author (prevent spoofing)
+            if (isContentCreator(user) && !isAdmin(user)) {
               return user?.id
             }
+            // For admins, allow them to set any author
+            return data?.author
           },
         ],
       },

@@ -50,6 +50,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   initialWeather,
   isInstallable,
   handleInstallClick,
+  formattedDate,
 }) => {
   const router = useRouter()
 

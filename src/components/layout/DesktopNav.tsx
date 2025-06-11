@@ -28,8 +28,8 @@ const DesktopNav: React.FC<DesktopNavProps> = ({ categories, countries }) => {
 
   return (
     <div className="py-2 border-b border-gray-100 hidden lg:block">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-12 gap-4 items-center">
+      <div className="container mx-auto px-2">
+        <div className="grid grid-cols-12 gap-2 items-center">
           <div className="col-span-3 relative z-20 bg-white">
             <SearchInput
               isHeaderSearch={true}
