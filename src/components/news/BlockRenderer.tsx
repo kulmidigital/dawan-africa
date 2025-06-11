@@ -33,6 +33,81 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
     )
   }
 
+  // Helper function to render inline text nodes including links and formatting
+  const renderTextNodes = (children: any[]): React.ReactNode[] => {
+    return children.map((textNode: any, i: number) => {
+      // Handle link nodes (inline)
+      if (textNode.type === 'link') {
+        const url = textNode.fields?.url || textNode.url || ''
+        const isExternal = url.startsWith('http')
+
+        return (
+          <a
+            key={i}
+            href={url}
+            target={isExternal ? '_blank' : undefined}
+            rel={isExternal ? 'noopener noreferrer' : undefined}
+            className="text-blue-600 hover:text-blue-800 underline inline-flex items-center"
+          >
+            {textNode.children ? renderTextNodes(textNode.children) : textNode.text || 'Link'}
+            {isExternal && <ExternalLink className="ml-1 h-3 w-3" />}
+          </a>
+        )
+      }
+
+      // Handle autolink nodes (inline)
+      if (textNode.type === 'autolink') {
+        const url = textNode.fields?.url || textNode.url || ''
+        const isExternal = url.startsWith('http')
+
+        return (
+          <a
+            key={i}
+            href={url}
+            target={isExternal ? '_blank' : undefined}
+            rel={isExternal ? 'noopener noreferrer' : undefined}
+            className="text-blue-600 hover:text-blue-800 underline inline-flex items-center"
+          >
+            {textNode.children ? renderTextNodes(textNode.children) : textNode.text || url}
+            {isExternal && <ExternalLink className="ml-1 h-3 w-3" />}
+          </a>
+        )
+      }
+
+      // Handle regular text nodes with formatting
+      if (textNode.type === 'text' || !textNode.type) {
+        const textContent = textNode.text || ''
+        let className = ''
+
+        // Apply text formatting based on format bitmask
+        if (textNode.format) {
+          if (textNode.format & 1) className += ' font-bold'
+          if (textNode.format & 2) className += ' italic'
+          if (textNode.format & 4) className += ' underline'
+          if (textNode.format & 8) className += ' line-through'
+          if (textNode.format & 16) className += ' text-sm'
+          if (textNode.format & 32) className += ' uppercase'
+          if (textNode.format & 64)
+            className += ' text-code inline bg-gray-100 px-1.5 py-0.5 rounded font-mono'
+        }
+
+        return (
+          <span key={i} className={className || undefined}>
+            {textContent}
+          </span>
+        )
+      }
+
+      // Handle other inline node types that might have children
+      if (textNode.children) {
+        return <span key={i}>{renderTextNodes(textNode.children)}</span>
+      }
+
+      // Fallback for unknown inline node types
+      return <span key={i}>{textNode.text || ''}</span>
+    })
+  }
+
   // Lexical editor structure handling
   if (blockContent.root?.children) {
     // Convert Lexical structure to JSX
@@ -43,32 +118,15 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
             case 'paragraph':
               return (
                 <p key={index} className="relative group">
-                  {node.children.map((textNode: any, i: number) => {
-                    // Handle text formatting
-                    const textContent = textNode.text
-                    let className = ''
-
-                    if (textNode.format & 1) className += ' font-bold'
-                    if (textNode.format & 2) className += ' italic'
-                    if (textNode.format & 4) className += ' underline'
-                    if (textNode.format & 8) className += ' line-through'
-                    if (textNode.format & 16) className += ' text-sm'
-                    if (textNode.format & 32) className += ' uppercase'
-                    if (textNode.format & 64)
-                      className += ' text-code inline bg-gray-100 px-1.5 py-0.5 rounded font-mono'
-
-                    return (
-                      <span key={i} className={className || undefined}>
-                        {textContent}
-                      </span>
-                    )
-                  })}
+                  {node.children ? renderTextNodes(node.children) : ''}
                 </p>
               )
             case 'heading':
               // Create the appropriate heading level
               const tag = node.tag || 2 // Default to h2 if not specified
-              const headingContent = node.children.map((textNode: any) => textNode.text).join('')
+              const headingContent = node.children
+                ? node.children.map((textNode: any) => textNode.text || '').join('')
+                : ''
 
               if (tag === 1) {
                 return (
@@ -138,9 +196,7 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
                     <li key={i} className="my-2">
                       {listItem.children.map((paraNode: any, j: number) => (
                         <React.Fragment key={j}>
-                          {paraNode.children
-                            .map((textNode: any, k: number) => textNode.text)
-                            .join('')}
+                          {paraNode.children ? renderTextNodes(paraNode.children) : ''}
                         </React.Fragment>
                       ))}
                     </li>
@@ -157,16 +213,15 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
                   <div className="relative z-10">
                     {node.children.map((paraNode: any, i: number) => (
                       <p key={i} className="italic not-italic">
-                        {paraNode.children
-                          .map((textNode: any, j: number) => textNode.text)
-                          .join('')}
+                        {paraNode.children ? renderTextNodes(paraNode.children) : ''}
                       </p>
                     ))}
                   </div>
                 </blockquote>
               )
             case 'code':
-              const codeText = node.children.map((textNode: any) => textNode.text).join('\n')
+              const codeText =
+                node.children?.map((textNode: any) => textNode.text || '').join('\n') || ''
               return (
                 <div key={index} className="my-6">
                   <div className="flex items-center justify-between bg-gray-800 text-gray-200 px-4 py-2 text-sm rounded-t-md">
@@ -320,21 +375,6 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
               }
 
               return null
-            case 'link':
-              const url = node.url || ''
-              const isExternal = url.startsWith('http')
-              return (
-                <a
-                  key={index}
-                  href={url}
-                  target={isExternal ? '_blank' : undefined}
-                  rel={isExternal ? 'noopener noreferrer' : undefined}
-                  className="text-blue-600 hover:text-blue-800 underline inline-flex items-center"
-                >
-                  {node.children.map((textNode: any) => textNode.text).join('')}
-                  {isExternal && <ExternalLink className="ml-1 h-3 w-3" />}
-                </a>
-              )
             default:
               // Handle any other node types
               return <div key={index}>[Unsupported block type: {node.type}]</div>
@@ -508,7 +548,7 @@ const OptimizedVideo: React.FC<{
             setIsLoading(false)
             setHasError(true)
           }}
-          aria-label={caption || 'Video content'}
+          aria-label={caption ?? 'Video content'}
         >
           <source src={videoUrl} type="video/mp4" />
           Your browser does not support the video tag.
