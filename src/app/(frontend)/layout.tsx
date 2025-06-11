@@ -3,7 +3,7 @@ import '../global.css'
 import '@/styles/audio-player.css'
 import HeaderServer from '@/components/layout/HeaderServer'
 import Footer from '@/components/layout/Footer'
-import Breadcrumbs from '@/components/layout/Breadcrumbs'
+
 import NewsletterPopup from '@/components/NewsletterPopup'
 import { Source_Sans_3 } from 'next/font/google'
 import { AuthProvider } from '@/hooks/useAuth'
@@ -251,7 +251,6 @@ export default function RootLayout({ children }: { readonly children: React.Reac
                 <AudioPlayerProvider>
                   <Toaster richColors position="top-right" />
                   <HeaderServer />
-                  <Breadcrumbs />
                   <main className="flex-grow">{children}</main>
                   <Footer />
                   <FloatingAudioPlayer />

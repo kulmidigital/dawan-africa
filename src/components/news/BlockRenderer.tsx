@@ -33,12 +33,42 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
     )
   }
 
+  // URL validation function to prevent XSS attacks
+  const isValidUrl = (url: string): boolean => {
+    try {
+      // Use a base URL that works on both server and client
+      const baseUrl = typeof window !== 'undefined' ? window.location.href : 'https://localhost'
+      const parsed = new URL(url, baseUrl)
+      return ['http:', 'https:', 'mailto:'].includes(parsed.protocol)
+    } catch {
+      return false
+    }
+  }
+
+  // Helper function to extract plain text from children (for anchor IDs)
+  const extractPlainText = (children: any[]): string => {
+    return children
+      .map((child: any) => {
+        if (child.type === 'text' || !child.type) return child.text || ''
+        if (child.children) return extractPlainText(child.children)
+        return ''
+      })
+      .join('')
+  }
+
   // Helper function to render inline text nodes including links and formatting
   const renderTextNodes = (children: any[]): React.ReactNode[] => {
     return children.map((textNode: any, i: number) => {
       // Handle link nodes (inline)
       if (textNode.type === 'link') {
         const url = textNode.fields?.url || textNode.url || ''
+        if (!isValidUrl(url)) {
+          return (
+            <span key={i}>
+              {textNode.children ? renderTextNodes(textNode.children) : textNode.text || 'Link'}
+            </span>
+          )
+        }
         const isExternal = url.startsWith('http')
 
         return (
@@ -58,6 +88,13 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
       // Handle autolink nodes (inline)
       if (textNode.type === 'autolink') {
         const url = textNode.fields?.url || textNode.url || ''
+        if (!isValidUrl(url)) {
+          return (
+            <span key={i}>
+              {textNode.children ? renderTextNodes(textNode.children) : textNode.text || url}
+            </span>
+          )
+        }
         const isExternal = url.startsWith('http')
 
         return (
@@ -124,9 +161,7 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
             case 'heading':
               // Create the appropriate heading level
               const tag = node.tag || 2 // Default to h2 if not specified
-              const headingContent = node.children
-                ? node.children.map((textNode: any) => textNode.text || '').join('')
-                : ''
+              const headingContent = node.children ? extractPlainText(node.children) : ''
 
               if (tag === 1) {
                 return (
@@ -135,7 +170,7 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
                       href={`#${headingContent.toLowerCase().replace(/\s+/g, '-')}`}
                       className="no-underline"
                     >
-                      {headingContent}
+                      {node.children ? renderTextNodes(node.children) : ''}
                       <span className="opacity-0 group-hover:opacity-100 ml-2 text-blue-500 transition-opacity">
                         #
                       </span>
@@ -153,7 +188,7 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
                       href={`#${headingContent.toLowerCase().replace(/\s+/g, '-')}`}
                       className="no-underline"
                     >
-                      {headingContent}
+                      {node.children ? renderTextNodes(node.children) : ''}
                       <span className="opacity-0 group-hover:opacity-100 ml-2 text-blue-500 transition-opacity">
                         #
                       </span>
@@ -171,7 +206,7 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
                       href={`#${headingContent.toLowerCase().replace(/\s+/g, '-')}`}
                       className="no-underline"
                     >
-                      {headingContent}
+                      {node.children ? renderTextNodes(node.children) : ''}
                       <span className="opacity-0 group-hover:opacity-100 ml-2 text-blue-500 transition-opacity">
                         #
                       </span>
@@ -179,11 +214,11 @@ const RichTextBlock: React.FC<{ content: any }> = ({ content }) => {
                   </h3>
                 )
               } else if (tag === 4) {
-                return <h4 key={index}>{headingContent}</h4>
+                return <h4 key={index}>{node.children ? renderTextNodes(node.children) : ''}</h4>
               } else if (tag === 5) {
-                return <h5 key={index}>{headingContent}</h5>
+                return <h5 key={index}>{node.children ? renderTextNodes(node.children) : ''}</h5>
               } else {
-                return <h6 key={index}>{headingContent}</h6>
+                return <h6 key={index}>{node.children ? renderTextNodes(node.children) : ''}</h6>
               }
             case 'list':
               const ListTag = node.listType === 'number' ? 'ol' : 'ul'
